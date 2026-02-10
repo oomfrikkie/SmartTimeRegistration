@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-     
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -20,9 +19,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         password: config.get<string>('POSTGRES_PASSWORD') || 'admin',
         database: config.get<string>('POSTGRES_DB') || 'mydb',
         autoLoadEntities: true,
-        synchronize: true, // dev only
+        synchronize: true,
       }),
     }),
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
