@@ -1,0 +1,30 @@
+.home-container {
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+  max-width: 1000px;
+}
+
+.home-title {
+  margin-bottom: 8px;
+}
+
+.home-status {
+  opacity: 0.8;
+}
+
+.home-message {
+  opacity: 0.8;
+}
+
+.section-title {
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.code-block {
+  white-space: pre-wrap;
+  background: #f4f6f8;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
