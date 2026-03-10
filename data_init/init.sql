@@ -14,7 +14,8 @@ CREATE TABLE event (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     date DATE NOT NULL,
-    total_hours DECIMAL(5,2) NOT NULL
+    total_hours DECIMAL(5,2) NOT NULL,
+    account_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE
 );
 
 
