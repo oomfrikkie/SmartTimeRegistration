@@ -2,9 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import NavBar from "../components/NavBar/NavBar";
 
 import Home from "../pages/Home/Home";
-import Login from "../pages/Login.jsx";
-import Signup from "../pages/Signup.jsx";
-import ResetPassword from "../pages/ResetPassword.jsx";
+import Login from "../pages/Login/Login.jsx";
+import Signup from "../pages/Signup/Signup.jsx";
+import ResetPassword from "../pages/ResetPassword/ResetPassword.jsx";
 
 function App() {
   return (
