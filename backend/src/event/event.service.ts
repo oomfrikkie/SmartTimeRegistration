@@ -71,4 +71,28 @@ export class EventService {
       },
     }));
   }
+
+  async getEventByEmail(email: string) {
+  const events = await this.eventRepo.find({
+    where: {
+      account: {
+        email: email,
+      },
+    },
+    relations: ['account'],
+  });
+
+  return events.map(event => ({
+      id: event.id,
+      name: event.name,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      date: event.date,
+      total_hours: event.total_hours,
+      account: {
+        id: event.account.id,
+        email: event.account.email,
+      },
+    }));
+}
 }
