@@ -9,7 +9,6 @@ export class ImportService {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = ICAL.parse(icsText);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const component = new ICAL.Component(parsed);
     const events = component.getAllSubcomponents('vevent');
 

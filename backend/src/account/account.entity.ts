@@ -1,12 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Event } from '../event/event.entity';
 
 @Entity({ name: 'account' })
 export class Account {
-
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'name', type: 'varchar', length: 100  })
+  @Column({ name: 'name', type: 'varchar', length: 100 })
   name: string;
 
   @Column({ name: 'surname', type: 'varchar', length: 100 })
@@ -17,4 +17,7 @@ export class Account {
 
   @Column({ name: 'password', type: 'varchar', length: 255 })
   password: string;
+
+  @OneToMany(() => Event, (event) => event.account)
+  events: Event[];
 }
