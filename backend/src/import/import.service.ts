@@ -4,8 +4,11 @@ import ICAL from 'ical.js';
 @Injectable()
 export class ImportService {
   async convertIcsToJson(icsUrl: string) {
+    console.log('Fetching ICS from:', icsUrl);
     const response = await fetch(icsUrl);
+    console.log('Response status:', response.status);
     const icsText = await response.text();
+    console.log('ICS text preview:', icsText.slice(0, 200));
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = ICAL.parse(icsText);
