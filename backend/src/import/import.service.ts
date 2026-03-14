@@ -3,7 +3,7 @@ import ICAL from 'ical.js';
 
 @Injectable()
 export class ImportService {
-  async convertIcsToJson(icsUrl: string) {
+  async convertIcsToJson(icsUrl: string, start_date: Date, end_date: Date) {
     console.log('Fetching ICS from:', icsUrl);
     const response = await fetch(icsUrl);
     console.log('Response status:', response.status);
@@ -15,22 +15,31 @@ export class ImportService {
     const component = new ICAL.Component(parsed);
     const events = component.getAllSubcomponents('vevent');
 
-    return events.map((event) => {
-      const vevent = new ICAL.Event(event);
+    const filterStart = new Date(start_date);
+    const filterEnd = new Date(end_date);
 
-      const startTime = vevent.startDate;
-      const endTime = vevent.endDate;
+    return events
+      .filter((event) => {
+        const vevent = new ICAL.Event(event);
+        const eventDate = vevent.startDate.toJSDate();
+        return eventDate >= filterStart && eventDate <= filterEnd;
+      })
+      .map((event) => {
+        const vevent = new ICAL.Event(event);
 
-      const durationHours =
-        (endTime.toUnixTime() - startTime.toUnixTime()) / 3600;
+        const startTime = vevent.startDate;
+        const endTime = vevent.endDate;
 
-      return {
-        name: vevent.summary,
-        date: startTime.toJSDate().toISOString().split('T')[0],
-        start_time: startTime.toJSDate().toTimeString().split(' ')[0],
-        end_time: endTime.toJSDate().toTimeString().split(' ')[0],
-        total_hours: Math.round(durationHours * 100) / 100,
-      };
-    });
+        const durationHours =
+          (endTime.toUnixTime() - startTime.toUnixTime()) / 3600;
+
+        return {
+          name: vevent.summary,
+          date: startTime.toJSDate().toISOString().split('T')[0],
+          start_time: startTime.toJSDate().toTimeString().split(' ')[0],
+          end_time: endTime.toJSDate().toTimeString().split(' ')[0],
+          total_hours: Math.round(durationHours * 100) / 100,
+        };
+      });
   }
 }

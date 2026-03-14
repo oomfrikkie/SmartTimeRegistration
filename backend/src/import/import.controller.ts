@@ -8,6 +8,10 @@ export class ImportController {
 
   @Post()
   async importCalendar(@Body() dto: ImportCalendarDto) {
-    return this.importService.convertIcsToJson(dto.icsUrl);
+    return this.importService.convertIcsToJson(
+      dto.icsUrl,
+      dto.start_date,
+      dto.end_date,
+    );
   }
 }
