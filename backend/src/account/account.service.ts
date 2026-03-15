@@ -48,7 +48,7 @@ export class AccountService {
     return {
       message: 'Account created',
       account: Object.assign(new AccountDto(), {
-        id: savedAccount.account_id,
+        id: savedAccount.id,
         email: savedAccount.email,
         name: savedAccount.name,
         surname: savedAccount.surname,
