@@ -1,7 +1,114 @@
 import { Link } from "react-router-dom";
-
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
+  const [formData, setFormData] = useState({
+    name: "",
+    surname: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+
+  // State for UI feedback
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // For navigation after successful signup
+  const navigate = useNavigate();
+
+  // Handle input changes
+  const handleChange = (e) => {
+      const { name, value } = e.target;
+      setFormData(prev => ({
+          ...prev,
+          [name]: value
+      }));
+      // Clear error when user starts typing again
+      setErrorMessage("");
+  };
+
+   // Handle form submission
+   const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Submitting form", formData);
+    
+    // Basic validation
+    if (!formData.name || !formData.surname || !formData.email || !formData.password || !formData.confirmPassword) {
+      setErrorMessage("Please fill in all fields");
+      return;
+    }
+
+    // Email format validation (optional - can rely on backend)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setErrorMessage("Please enter a valid email address");
+      return;
+    }
+
+    // Password match validation
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Passwords do not match");
+      return;
+    }
+
+    // Password length validation
+    if (formData.password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+    
+    try {
+      // Send request to your NestJS backend
+      const response = await fetch('http://localhost:3000/account/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            surname: formData.surname,
+            email: formData.email,
+            password: formData.password
+          })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+          // Handle error response from backend
+          throw new Error(data.message || 'Registration failed');
+      }
+
+      // Successfully created an account
+      setSuccessMessage(data.message || "Account created successfully!");
+      
+      // Clear form
+      setFormData({
+          name: "",
+          surname: "",
+          email: "",
+          password: "",
+          confirmPassword: ""
+      });
+
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
+    } catch (error) {
+      setErrorMessage(error.message || "Failed to connect to server. Make sure the backend is running.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="auth-page">
 
@@ -10,31 +117,82 @@ function Signup() {
       <div className="auth-card">
         <h2>Create Account</h2>
 
-        <label>Name</label>
-        <input type="text" placeholder="Enter your first name" />
+        {errorMessage && (
+            <div className="error-message">
+                {errorMessage}
+            </div>
+        )}
 
-        <label>Surname</label>
-        <input type="text" placeholder="Enter your surname" />
+        {successMessage && (
+            <div className="success-message">
+                {successMessage} Redirecting to login...
+            </div>
+        )}
+        
+        <form onSubmit={handleSubmit}>
+          <label>Name</label>
+            <input 
+              name="name" 
+              placeholder="Enter your first name" 
+              value={formData.name}
+              onChange={ handleChange }
+              disabled={isLoading}
+            />
 
-        <label>Email</label>
-        <input type="email" placeholder="Enter your email" />
+            <label>Surname</label>
+            <input 
+              name="surname" 
+              placeholder="Enter your surname" 
+              value={formData.surname}
+              onChange={ handleChange }
+              disabled={isLoading}
+            />
 
-        <label>Password</label>
-        <input type="password" placeholder="Enter your password" />
+            <label>Email</label>
+            <input 
+              name="email" 
+              placeholder="Enter your email" 
+              value={formData.email}
+              onChange={ handleChange }
+              disabled={isLoading}
+            />
 
-        <label>Confirm Password</label>
-        <input type="password" placeholder="Confirm your password" />
+            <label>Password</label>
+            <input 
+              type="password"
+              name="password" 
+              placeholder="Enter your password" 
+              value={formData.password}
+              onChange={ handleChange }
+              disabled={isLoading}
+            />
 
-        <button className="primary-btn">Create Account</button>
+            <label>Confirm Password</label>
+            <input 
+              type="password"
+              name="confirmPassword" 
+              placeholder="Confirm your password" 
+              value={formData.confirmPassword}
+              onChange={ handleChange }
+              disabled={isLoading}
+            />
 
-        <button className="microsoft-btn">
-          Register with Microsoft
-        </button>
+            <button 
+              className="primary-btn" 
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating Account..." : "Create Account"}
+            </button>
 
-        <p className="auth-footer">
-          Already have an account? <Link to="/login">Login here</Link>
-        </p>
+            <button className="microsoft-btn">
+              Register with Microsoft
+            </button>
 
+            <p className="auth-footer">
+              Already have an account? <Link to="/login">Login here</Link>
+            </p>
+          </form>
       </div>
     </div>
   );
