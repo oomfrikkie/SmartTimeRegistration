@@ -23,7 +23,7 @@ export class AccountController {
 
         if (req.headers.accept && req.headers.accept.includes('application/xml')) {
             res.set('Content-Type', 'application/xml');
-            return res.send(js2xmlparser.parse(result));
+            return res.send(js2xmlparser.parse('account', result));
         }
 
         return res.json(result);

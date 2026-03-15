@@ -3,6 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ImportModule } from './import/import.module';
+import { EventModule } from './event/event.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -22,6 +25,10 @@ import { AppService } from './app.service';
         synchronize: true,
       }),
     }),
+
+    ImportModule,
+    EventModule,
+    AccountModule,
   ],
   controllers: [AppController],
   providers: [AppService],

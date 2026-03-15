@@ -8,6 +8,10 @@ CREATE TABLE account (
     password VARCHAR(255) NOT NULL
 );
 
+-- Example account
+INSERT INTO account (name, surname, email, password)
+VALUES ('John', 'Doe', 'john.doe@example.com', 'password123');
+
 CREATE TABLE event (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
