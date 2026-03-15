@@ -24,6 +24,36 @@ export class EventService {
       throw new NotFoundException('Account not found');
     }
 
+    // Check for existing event (same name, date, start_time, end_time, account)
+    const existingEvent = await this.eventRepo.findOne({
+      where: {
+        name: dto.name,
+        date: dto.date,
+        start_time: dto.start_time,
+        end_time: dto.end_time,
+        account: { id: dto.account_id },
+      },
+      relations: ['account'],
+    });
+
+    if (existingEvent) {
+      // Return the existing event in the same format
+      return {
+        id: existingEvent.id,
+        name: existingEvent.name,
+        start_time: existingEvent.start_time,
+        end_time: existingEvent.end_time,
+        date: existingEvent.date,
+        total_hours: existingEvent.total_hours,
+        account: {
+          id: account.id,
+          name: account.name,
+          surname: account.surname,
+          email: account.email,
+        },
+      };
+    }
+
     const event = this.eventRepo.create({
       ...dto,
       account,

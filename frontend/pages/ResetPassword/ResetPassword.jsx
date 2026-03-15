@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import "../../src/styles/auth.css";
+
 
 function ResetPassword() {
 

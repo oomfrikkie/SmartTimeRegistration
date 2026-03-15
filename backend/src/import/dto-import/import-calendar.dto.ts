@@ -9,4 +9,7 @@ export class ImportCalendarDto {
 
   @ApiProperty({ example: '2026-12-31' })
   end_date: Date;
+
+  @ApiProperty({ example: 1 })
+  account_id: number;
 }

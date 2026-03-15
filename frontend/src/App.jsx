@@ -5,6 +5,7 @@ import Home from "../pages/Home/Home";
 import Login from "../pages/Login/Login.jsx";
 import Signup from "../pages/Signup/Signup.jsx";
 import ResetPassword from "../pages/ResetPassword/ResetPassword.jsx";
+import Test from '../pages/Test/Test.jsx'
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
 
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/test" element={<Test />} />
+        
       </Routes>
     </section>
   );
