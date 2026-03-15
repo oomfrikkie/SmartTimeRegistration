@@ -11,7 +11,10 @@ function Signup() {
         <h2>Create Account</h2>
 
         <label>Name</label>
-        <input type="text" placeholder="Enter your full name" />
+        <input type="text" placeholder="Enter your first name" />
+
+        <label>Surname</label>
+        <input type="text" placeholder="Enter your surname" />
 
         <label>Email</label>
         <input type="email" placeholder="Enter your email" />
