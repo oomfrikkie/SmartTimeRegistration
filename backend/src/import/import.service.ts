@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import ICAL from 'ical.js';
 import { EventService } from '../event/event.service';
 
@@ -12,8 +12,6 @@ export class ImportService {
     end_date: Date,
     account_id: number,
   ) {
-
-    // Check if dates are provided
     if (!start_date || !end_date) {
       return { message: 'No dates selected' };
     }
@@ -25,8 +23,8 @@ export class ImportService {
     const component = new ICAL.Component(parsed);
     const events = component.getAllSubcomponents('vevent');
 
-    const filterStart = new Date(start_date);
-    const filterEnd = new Date(end_date);
+    const filterStart = new Date(`${start_date}T00:00:00`);
+    const filterEnd = new Date(`${end_date}T23:59:59.999`);
 
     const filtered = events
       .filter((event) => {
@@ -37,7 +35,6 @@ export class ImportService {
       })
       .map((event) => {
         const vevent = new ICAL.Event(event);
-
         const startTime = vevent.startDate;
         const endTime = vevent.endDate;
 
@@ -54,7 +51,6 @@ export class ImportService {
         };
       });
 
-    // If nothing found
     if (!filtered.length) {
       return { message: 'No projects found' };
     }
