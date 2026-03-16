@@ -112,10 +112,10 @@ function Signup() {
   return (
     <div className="auth-page">
 
-      <div className="logo">IT Hub Logo</div>
-
       <div className="auth-card">
         <h2>Create Account</h2>
+
+        {error && <p className="error">{error}</p>}
 
         {errorMessage && (
             <div className="error-message">
