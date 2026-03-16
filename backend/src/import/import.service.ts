@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import ICAL from 'ical.js';
 import { EventService } from '../event/event.service';
 
@@ -12,8 +12,15 @@ export class ImportService {
     end_date: Date,
     account_id: number,
   ) {
+
+    // Check if dates are provided
+    if (!start_date || !end_date) {
+      return { message: 'No dates selected' };
+    }
+
     const response = await fetch(icsUrl);
     const icsText = await response.text();
+
     const parsed = ICAL.parse(icsText);
     const component = new ICAL.Component(parsed);
     const events = component.getAllSubcomponents('vevent');
@@ -25,14 +32,18 @@ export class ImportService {
       .filter((event) => {
         const vevent = new ICAL.Event(event);
         const eventDate = vevent.startDate.toJSDate();
+
         return eventDate >= filterStart && eventDate <= filterEnd;
       })
       .map((event) => {
         const vevent = new ICAL.Event(event);
+
         const startTime = vevent.startDate;
         const endTime = vevent.endDate;
+
         const durationHours =
           (endTime.toUnixTime() - startTime.toUnixTime()) / 3600;
+
         return {
           name: vevent.summary,
           date: startTime.toJSDate().toISOString().split('T')[0],
@@ -43,12 +54,18 @@ export class ImportService {
         };
       });
 
-    // Save each event using EventService
+    // If nothing found
+    if (!filtered.length) {
+      return { message: 'No projects found' };
+    }
+
     const savedEvents: any[] = [];
+
     for (const eventDto of filtered) {
       const saved = await this.eventService.addEvent(eventDto);
       savedEvents.push(saved);
     }
+
     return savedEvents;
   }
 }
