@@ -6,6 +6,8 @@ import { AccountService } from './account.service';
 import { AccountDto } from './dto-account/account.dto';
 import { CreateAccountDto } from './dto-account/create-account.dto';
 import { LoginDto } from './dto-account/login.dto';
+import { ResetPasswordDto } from './dto-account/reset-password.dto';
+import { SetNewPasswordDto } from './dto-account/set-new-password.dto';
 
 @Controller('account')
 export class AccountController {
@@ -64,5 +66,28 @@ export class AccountController {
 
             throw error; // Let NestJS handle JSON errors
         }
+    }
+
+    @ApiBody({
+        type: ResetPasswordDto,
+        description: 'Request password reset',
+        required: true,
+    })
+    @Post('reset-password')
+    async resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.accountService.requestPasswordReset(dto.email);
+    }
+
+    @ApiBody({
+        type: SetNewPasswordDto,
+        description: 'Set new password using token',
+        required: true,
+    })
+    @Post('set-new-password')
+    async setNewPassword(@Body() dto: SetNewPasswordDto) {
+        return this.accountService.setNewPassword(
+        dto.token,
+        dto.password,
+        );
     }
 }

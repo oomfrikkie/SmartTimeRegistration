@@ -18,6 +18,12 @@ export class Account {
   @Column({ name: 'password', type: 'varchar', length: 255 })
   password: string;
 
+  @Column({ nullable: true })
+  resetPasswordToken: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  resetPasswordExpires: number;
+
   @OneToMany(() => Event, (event) => event.account)
   events: Event[];
 }

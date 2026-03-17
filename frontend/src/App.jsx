@@ -5,6 +5,7 @@ import Home from "../pages/Home/Home";
 import Login from "../pages/Login/Login.jsx";
 import Signup from "../pages/Signup/Signup.jsx";
 import ResetPassword from "../pages/ResetPassword/ResetPassword.jsx";
+import SetNewPassword from "../pages/SetNewPassword/SetNewPassword.jsx";
 import Test from '../pages/Test/Test.jsx'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/set-new-password" element={<SetNewPassword />} />
 
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />

@@ -1,5 +1,6 @@
 
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import "./restpassword.css";
 
 function ResetPassword() {
@@ -7,13 +8,14 @@ function ResetPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (email) => {
     const regex = /\S+@\S+\.\S+/;
     return regex.test(email);
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
 
     if (!email) {
       setError("Please enter your email address.");
@@ -28,10 +30,30 @@ function ResetPassword() {
     }
 
     setError("");
+    setSuccess("");
+    setLoading(true);
 
-    console.log("Reset password email sent to:", email);
+    try {
+      const response = await fetch('http://localhost:3000/account/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-    setSuccess("Password reset link has been sent to your email.");
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(data.message);
+      } else {
+        setError(data.message || 'An error occurred');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,8 +81,9 @@ function ResetPassword() {
         <button
           className="primary-btn"
           onClick={handleResetPassword}
+          disabled={loading}
         >
-          Send Reset Link
+          {loading ? 'Sending...' : 'Send Reset Link'}
         </button>
 
         <Link className="back-link" to="/login">
