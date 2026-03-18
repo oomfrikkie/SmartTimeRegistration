@@ -18,7 +18,7 @@ export class AccountService {
 
   // Account creation
   async create(dto: CreateAccountDto): Promise<{ message: string; account: AccountDto }> {
-    if (!dto.email || !dto.password) {
+    if (!dto || !dto.email || !dto.password) {
       throw new BadRequestException('Email and password are required');
     }
 
@@ -60,6 +60,10 @@ export class AccountService {
 
   //Logging in to an existing account
   async login(dto: LoginDto, req: Request): Promise<{ message: string; account: Partial<Account> }> {
+    if (!dto || !dto.email || !dto.password) {
+      throw new UnauthorizedException('Email and password are required');
+    }
+
     // EMAIL FORMAT CHECK
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {
