@@ -42,12 +42,46 @@ export class ImportService {
         const durationHours =
           (endTime.toUnixTime() - startTime.toUnixTime()) / 3600;
 
+        const location =
+          (event.getFirstPropertyValue('location') as string | null) ||
+          undefined;
+        const description =
+          (event.getFirstPropertyValue('description') as string) ||
+          null ||
+          undefined;
+        const is_series = !!event.getFirstProperty('rrule');
+        const is_online =
+          !!(location && location?.toLowerCase().includes('teams')) ||
+          !!(
+            description &&
+            description?.toLowerCase().includes('microsoft teams')
+          ) ||
+          !!event.getFirstProperty('x-microsoft-skypeteamsmeetingurl');
+
+        const attendeeProps = event.getAllProperties('attendee');
+        const attendees = attendeeProps
+          .filter((a) => {
+            const role = a.getParameter('role');
+            return !role || role === 'REQ-PARTICIPANT';
+          })
+          .map((a) => {
+            const displayName = a.getParameter('displayName') as string | null;
+            const value = a.getFirstValue() as string | null;
+            return displayName || (value ? value.replace('mailto:', '') : '');
+          })
+          .filter(Boolean);
+
         return {
           name: vevent.summary,
           date: startTime.toJSDate().toISOString().split('T')[0],
           start_time: startTime.toJSDate().toTimeString().split(' ')[0],
           end_time: endTime.toJSDate().toTimeString().split(' ')[0],
           total_hours: Math.round(durationHours * 100) / 100,
+          location,
+          description,
+          is_online,
+          is_series,
+          attendees,
           account_id,
         };
       });
