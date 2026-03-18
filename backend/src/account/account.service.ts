@@ -7,7 +7,8 @@ import { Account } from './account.entity';
 import { CreateAccountDto } from './dto-account/create-account.dto';
 import { LoginDto } from './dto-account/login.dto';
 import { AccountDto } from './dto-account/account.dto';
-
+import { Request } from 'express';
+import 'express-session';
 
 @Injectable()
 export class AccountService {
@@ -18,7 +19,7 @@ export class AccountService {
 
   // Account creation
   async create(dto: CreateAccountDto): Promise<{ message: string; account: AccountDto }> {
-    if (!dto.email || !dto.password) {
+    if (!dto || !dto.email || !dto.password) {
       throw new BadRequestException('Email and password are required');
     }
 
@@ -59,7 +60,11 @@ export class AccountService {
   }
 
   //Logging in to an existing account
-  async login(dto: LoginDto): Promise<{ message: string; account: Partial<Account> }> {
+  async login(dto: LoginDto, req: Request): Promise<{ message: string; account: Partial<Account> }> {
+    if (!dto || !dto.email || !dto.password) {
+      throw new UnauthorizedException('Email and password are required');
+    }
+
     // EMAIL FORMAT CHECK
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {
@@ -68,6 +73,7 @@ export class AccountService {
 
     const account = await this.accountRepo.findOne({
       where: { email: dto.email },
+      select: ['id', 'email', 'password', 'name', 'surname']
     });
 
     if (!account) {
@@ -80,6 +86,13 @@ export class AccountService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Store user info in session
+    if (req.session) {
+      req.session.userId = account.id.toString();
+      req.session.userEmail = account.email;
+      req.session.loggedIn = true;
+    }
+
     // Removing the password from the account object
     const { password, ...accountWithoutPassword } = account;
 
@@ -89,54 +102,18 @@ export class AccountService {
     };
   }
 
-  async requestPasswordReset(email: string): Promise<{ message: string }> {
-    const account = await this.accountRepo.findOne({
-      where: { email },
-    });
+  async findById(id: string): Promise<Partial<Account>> {
+    const numericId = parseInt(id, 10);
 
-    // Always return same message (security)
+    const account = await this.accountRepo.findOne({ 
+        where: { id: numericId },
+        select: ['id', 'email', 'name', 'surname'] 
+    });
+    
     if (!account) {
-      return { message: 'If this email exists, a reset link has been sent.' };
+        throw new UnauthorizedException('User not found');
     }
-
-    const token = crypto.randomBytes(32).toString('hex');
-
-    account.resetPasswordToken = token;
-    account.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
-
-    await this.accountRepo.save(account);
-
-    const resetLink = `http://localhost:5173/set-new-password?token=${token}`;
-
-    // TEMP: log instead of email
-    console.log('Reset link:', resetLink);
-
-    return {
-      message: 'If this email exists, a reset link has been sent.',
-    };
-  }
-
-  async setNewPassword(token: string, password: string): Promise<{ message: string }> {
-    const account = await this.accountRepo.findOne({
-      where: {
-        resetPasswordToken: token,
-      },
-    });
-
-    if (!account || !account.resetPasswordExpires || account.resetPasswordExpires < Date.now()) {
-      throw new BadRequestException('Invalid or expired token');
-    }
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    account.password = hashed;
-    account.resetPasswordToken = null;
-    account.resetPasswordExpires = null;
-
-    await this.accountRepo.save(account);
-
-    return {
-      message: 'Password updated successfully',
-    };
-  }
+    
+    return account;
+}
 }

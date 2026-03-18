@@ -1,9 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+const session = require('express-session');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "kJ9#mP2$vL5@nQ8&rT3*wX6%zY1^cB4",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,  // Prevents JavaScript access (more secure)
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: 'lax',
+      }
+    }) as any
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Smart Time Registration API')
@@ -14,7 +28,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  app.enableCors();
+  app.enableCors({
+    origin: ['http://localhost:3001', 'http://localhost:3000'], // Your React app URL
+    credentials: true, // Allow cookies to be sent
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

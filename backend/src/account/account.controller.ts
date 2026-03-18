@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, Req, Get, Res, HttpCode, HttpStatus, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { ApiProduces, ApiOkResponse, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import * as js2xmlparser from 'js2xmlparser';
@@ -6,8 +6,7 @@ import { AccountService } from './account.service';
 import { AccountDto } from './dto-account/account.dto';
 import { CreateAccountDto } from './dto-account/create-account.dto';
 import { LoginDto } from './dto-account/login.dto';
-import { ResetPasswordDto } from './dto-account/reset-password.dto';
-import { SetNewPasswordDto } from './dto-account/set-new-password.dto';
+import 'express-session';
 
 @Controller('account')
 export class AccountController {
@@ -36,10 +35,11 @@ export class AccountController {
     @ApiBody({ type: LoginDto, description: 'Login', required: true })
     @ApiOkResponse({ type: LoginDto })
     @Post('login')
+    @HttpCode(HttpStatus.OK)
     async login(@Body() dto: LoginDto, @Req() req: Request, @Res() res: Response) {
         try {
-            const loginResult = await this.accountService.login(dto);
-            
+            const loginResult = await this.accountService.login(dto, req);
+
             // Check if client wants XML
             if (req.headers.accept && req.headers.accept.includes('application/xml')) {
                 res.set('Content-Type', 'application/xml');
@@ -68,26 +68,27 @@ export class AccountController {
         }
     }
 
-    @ApiBody({
-        type: ResetPasswordDto,
-        description: 'Request password reset',
-        required: true,
-    })
-    @Post('reset-password')
-    async resetPassword(@Body() dto: ResetPasswordDto) {
-        return this.accountService.requestPasswordReset(dto.email);
+    // Add a new endpoint to check if user is logged in
+    @Get('profile')
+    async getProfile(@Req() req: Request) {
+        if (!req.session.userId) {
+            throw new UnauthorizedException('Not logged in');
+        }
+        
+        const account = await this.accountService.findById(req.session.userId);
+        return account;
     }
 
-    @ApiBody({
-        type: SetNewPasswordDto,
-        description: 'Set new password using token',
-        required: true,
-    })
-    @Post('set-new-password')
-    async setNewPassword(@Body() dto: SetNewPasswordDto) {
-        return this.accountService.setNewPassword(
-        dto.token,
-        dto.password,
-        );
+    // Add logout endpoint
+    @Post('logout')
+    async logout(@Req() req: Request) {
+        return new Promise((resolve) => {
+            req.session.destroy((err) => {
+            if (err) {
+                throw new InternalServerErrorException('Could not logout');
+            }
+            resolve({ message: 'Logged out successfully' });
+            });
+        });
     }
 }
