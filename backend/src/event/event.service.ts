@@ -88,7 +88,7 @@ export class EventService {
       relations: ['account'],
     });
 
-    return events.map(event => ({
+    return events.map((event) => ({
       id: event.id,
       name: event.name,
       start_time: event.start_time,
@@ -103,16 +103,16 @@ export class EventService {
   }
 
   async getEventByEmail(email: string) {
-  const events = await this.eventRepo.find({
-    where: {
-      account: {
-        email: email,
+    const events = await this.eventRepo.find({
+      where: {
+        account: {
+          email: email,
+        },
       },
-    },
-    relations: ['account'],
-  });
+      relations: ['account'],
+    });
 
-  return events.map(event => ({
+    return events.map((event) => ({
       id: event.id,
       name: event.name,
       start_time: event.start_time,
@@ -124,5 +124,5 @@ export class EventService {
         email: event.account.email,
       },
     }));
-}
+  }
 }

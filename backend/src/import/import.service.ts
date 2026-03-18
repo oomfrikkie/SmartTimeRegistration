@@ -19,12 +19,13 @@ export class ImportService {
     const response = await fetch(icsUrl);
     const icsText = await response.text();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = ICAL.parse(icsText);
     const component = new ICAL.Component(parsed);
     const events = component.getAllSubcomponents('vevent');
 
-    const filterStart = new Date(`${start_date}T00:00:00`);
-    const filterEnd = new Date(`${end_date}T23:59:59.999`);
+    const filterStart = new Date(`${String(start_date)}T00:00:00`);
+    const filterEnd = new Date(`${String(end_date)}T23:59:59.999`);
 
     const filtered = events
       .filter((event) => {
@@ -55,7 +56,9 @@ export class ImportService {
       return { message: 'No projects found' };
     }
 
-    const savedEvents: any[] = [];
+    const savedEvents: Awaited<
+      ReturnType<typeof this.eventService.addEvent>
+    >[] = [];
 
     for (const eventDto of filtered) {
       const saved = await this.eventService.addEvent(eventDto);
