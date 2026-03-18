@@ -8,15 +8,15 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email) => {
     const regex = /\S+@\S+\.\S+/;
     return regex.test(email);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
 
     if (!email || !password) {
       setError("Please enter your email and password.");
@@ -34,10 +34,43 @@ function Login() {
     }
 
     setError("");
-
-    console.log("Login successful:", { email, password });
+    setIsLoading(true);
 
     // API call to authenticate user here
+    try {
+      console.log("Attempting login with:", { email });
+
+      const response = await fetch('http://localhost:3000/account/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', // 👈 This is crucial! It sends cookies
+      });
+
+      const data = await response.json();
+      console.log("Login response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Success!
+      console.log("Login successful:", data);
+      
+      // Store user info in localStorage if you want (optional)
+      localStorage.setItem('user', JSON.stringify(data.account));
+      
+      // Redirect to home page
+      navigate("/home");
+      
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message || "Failed to connect to server. Make sure the backend is running.");
+    } finally {
+      setIsLoading(false);
+    }
 
     navigate("/home");
   };
@@ -49,7 +82,7 @@ function Login() {
 
         <h2>Smart Time Registration</h2>
 
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error" style={{ color: 'red', padding: '10px', background: '#ffeeee', borderRadius: '4px' }}>{error}</p>}
 
         <label>Email</label>
         <input
@@ -57,6 +90,7 @@ function Login() {
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={isLoading}
         />
 
         <label>Password</label>
@@ -65,9 +99,14 @@ function Login() {
           placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={isLoading}
         />
 
-        <button className="microsoft-btn">
+        <button 
+          className="microsoft-btn"
+          type="button"
+          disabled={isLoading}
+          >
           Sign in with Microsoft
         </button>
 

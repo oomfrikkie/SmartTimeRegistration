@@ -6,6 +6,8 @@ import { Account } from './account.entity';
 import { CreateAccountDto } from './dto-account/create-account.dto';
 import { LoginDto } from './dto-account/login.dto';
 import { AccountDto } from './dto-account/account.dto';
+import { Request } from 'express';
+import 'express-session';
 
 @Injectable()
 export class AccountService {
@@ -57,7 +59,7 @@ export class AccountService {
   }
 
   //Logging in to an existing account
-  async login(dto: LoginDto): Promise<{ message: string; account: Partial<Account> }> {
+  async login(dto: LoginDto, req: Request): Promise<{ message: string; account: Partial<Account> }> {
     // EMAIL FORMAT CHECK
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {
@@ -66,6 +68,7 @@ export class AccountService {
 
     const account = await this.accountRepo.findOne({
       where: { email: dto.email },
+      select: ['id', 'email', 'password', 'name', 'surname']
     });
 
     if (!account) {
@@ -78,6 +81,13 @@ export class AccountService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Store user info in session
+    if (req.session) {
+      req.session.userId = account.id.toString();
+      req.session.userEmail = account.email;
+      req.session.loggedIn = true;
+    }
+
     // Removing the password from the account object
     const { password, ...accountWithoutPassword } = account;
 
@@ -86,4 +96,19 @@ export class AccountService {
       account: accountWithoutPassword,
     };
   }
+
+  async findById(id: string): Promise<Partial<Account>> {
+    const numericId = parseInt(id, 10);
+
+    const account = await this.accountRepo.findOne({ 
+        where: { id: numericId },
+        select: ['id', 'email', 'name', 'surname'] 
+    });
+    
+    if (!account) {
+        throw new UnauthorizedException('User not found');
+    }
+    
+    return account;
+}
 }
