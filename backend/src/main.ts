@@ -29,7 +29,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3000'], // Your React app URL
+    origin: ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:3000'], // Frontend app URLs
     credentials: true, // Allow cookies to be sent
   });
 

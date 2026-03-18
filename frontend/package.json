@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.5.0",
+    "@azure/msal-react": "^5.0.7",
     "dayjs": "^1.11.13",
     "file-saver": "^2.0.5",
     "react": "^19.2.0",

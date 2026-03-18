@@ -6,6 +6,7 @@ import { AccountService } from './account.service';
 import { AccountDto } from './dto-account/account.dto';
 import { CreateAccountDto } from './dto-account/create-account.dto';
 import { LoginDto } from './dto-account/login.dto';
+import { MicrosoftRegisterDto } from './dto-account/microsoft-register.dto';
 import 'express-session';
 
 @Controller('account')
@@ -66,6 +67,14 @@ export class AccountController {
 
             throw error; // Let NestJS handle JSON errors
         }
+    }
+
+    @ApiConsumes('application/json')
+    @ApiBody({ type: MicrosoftRegisterDto, description: 'Register/login with Microsoft account', required: true })
+    @Post('microsoft-register')
+    @HttpCode(HttpStatus.OK)
+    async microsoftRegister(@Body() dto: MicrosoftRegisterDto, @Req() req: Request) {
+        return this.accountService.microsoftRegister(dto, req);
     }
 
     // Add a new endpoint to check if user is logged in

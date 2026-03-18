@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMsal } from "@azure/msal-react";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -13,8 +14,10 @@ function Signup() {
 
   // State for UI feedback
   const [isLoading, setIsLoading] = useState(false);
+  const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const { instance } = useMsal();
 
   // For navigation after successful signup
   const navigate = useNavigate();
@@ -28,6 +31,34 @@ function Signup() {
       }));
       // Clear error when user starts typing again
       setErrorMessage("");
+  };
+
+  // Microsoft login redirect
+  const handleMicrosoftRegister = async () => {
+    if (isMicrosoftLoading) {
+      return;
+    }
+
+    setIsMicrosoftLoading(true);
+    try {
+      sessionStorage.setItem("msal_login_started", "1");
+      await instance.loginRedirect({
+        scopes: ["openid", "profile", "email"],
+        redirectStartPage: `${window.location.origin}/home`,
+      });
+    } catch (error) {
+      sessionStorage.removeItem("msal_login_started");
+      console.error("MSAL login error:", error);
+      const errorCode = error?.errorCode || error?.code;
+      const errorText = error?.errorMessage || error?.message;
+      setErrorMessage(
+        errorCode || errorText
+          ? `Microsoft login failed: ${errorCode ? `${errorCode} - ` : ""}${errorText || "Unknown MSAL error"}`
+          : "Microsoft login failed"
+      );
+    } finally {
+      setIsMicrosoftLoading(false);
+    }
   };
 
    // Handle form submission
@@ -87,6 +118,7 @@ function Signup() {
 
       // Successfully created an account
       setSuccessMessage(data.message || "Account created successfully!");
+      console.log("[Signup] Email signup successful for:", formData.email);
       
       // Clear form
       setFormData({
@@ -111,8 +143,6 @@ function Signup() {
 
   return (
     <div className="auth-page">
-
-
       <div className="auth-card">
         <h2>Create Account</h2>
 
@@ -184,8 +214,13 @@ function Signup() {
               {isLoading ? "Creating Account..." : "Create Account"}
             </button>
 
-            <button className="microsoft-btn">
-              Register with Microsoft
+            <button
+              className="microsoft-btn"
+              type="button"
+              onClick={handleMicrosoftRegister}
+              disabled={isMicrosoftLoading}
+            >
+              {isMicrosoftLoading ? "Redirecting to Microsoft..." : "Register with Microsoft"}
             </button>
 
             <p className="auth-footer">

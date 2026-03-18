@@ -7,6 +7,7 @@ import { Account } from './account.entity';
 import { CreateAccountDto } from './dto-account/create-account.dto';
 import { LoginDto } from './dto-account/login.dto';
 import { AccountDto } from './dto-account/account.dto';
+import { MicrosoftRegisterDto } from './dto-account/microsoft-register.dto';
 import { Request } from 'express';
 import 'express-session';
 
@@ -17,6 +18,79 @@ export class AccountService {
     private readonly accountRepo: Repository<Account>,
   ) {}
 
+
+  async microsoftRegister(
+    dto: MicrosoftRegisterDto,
+    req: Request,
+  ): Promise<{ message: string; account: AccountDto; created: boolean }> {
+    if (!dto || !dto.email) {
+      throw new BadRequestException('Email is required');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(dto.email)) {
+      throw new BadRequestException('Invalid email format');
+    }
+
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const providedName = dto.name?.trim();
+    const providedSurname = dto.surname?.trim();
+
+    const existing = await this.accountRepo.findOne({
+      where: { email: normalizedEmail },
+      select: ['id', 'email', 'name', 'surname'],
+    });
+
+    if (existing) {
+      if (req.session) {
+        req.session.userId = existing.id.toString();
+        req.session.userEmail = existing.email;
+        req.session.loggedIn = true;
+      }
+
+      return {
+        message: 'Microsoft account already exists. Logged in successfully.',
+        account: Object.assign(new AccountDto(), {
+          id: existing.id,
+          email: existing.email,
+          name: existing.name,
+          surname: existing.surname,
+        }),
+        created: false,
+      };
+    }
+
+    const fallbackName = providedName || 'Microsoft';
+    const fallbackSurname = providedSurname || 'User';
+    const generatedPassword = crypto.randomBytes(32).toString('hex');
+    const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+    const createdAccount = this.accountRepo.create({
+      email: normalizedEmail,
+      name: fallbackName,
+      surname: fallbackSurname,
+      password: hashedPassword,
+    });
+
+    const saved = await this.accountRepo.save(createdAccount);
+
+    if (req.session) {
+      req.session.userId = saved.id.toString();
+      req.session.userEmail = saved.email;
+      req.session.loggedIn = true;
+    }
+
+    return {
+      message: 'Microsoft account created and logged in successfully.',
+      account: Object.assign(new AccountDto(), {
+        id: saved.id,
+        email: saved.email,
+        name: saved.name,
+        surname: saved.surname,
+      }),
+      created: true,
+    };
+  }
   // Account creation
   async create(dto: CreateAccountDto): Promise<{ message: string; account: AccountDto }> {
     if (!dto || !dto.email || !dto.password) {
