@@ -16,6 +16,22 @@ export class AddEventDto {
   @ApiProperty({ example: 1.5 })
   total_hours: number;
 
+  @ApiProperty({ example: 'Room 1012', required: false })
+  location?: string;
+
+  @ApiProperty({ example: 'Discuss sprint goals', required: false })
+  description?: string;
+
+  @ApiProperty({ example: false })
+  is_online?: boolean;
+
+  @ApiProperty({ example: false })
+  is_series?: boolean;
+
+  @ApiProperty({ example: ['sara@example.com', 'felix@example.com'], required: false
+  })
+  attendees?: string[];
+
   @ApiProperty({ example: 1 })
   account_id: number;
 }
