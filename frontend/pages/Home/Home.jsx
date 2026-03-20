@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "./home.css";
 
 export default function Home() {
@@ -86,6 +88,30 @@ export default function Home() {
   const handleClearFilters = () => {
     setStartDate("");
     setEndDate("");
+  };
+
+  const handleExportExcel = () => {
+    const rows = sortedEvents.map((e) => ({
+      Date: e.date ?? "",
+      Name: e.name ?? "",
+      Project: typeof e.name === "string" ? e.name.split(" - ")[0] : "",
+      StartTime: e.start_time ?? "",
+      EndTime: e.end_time ?? "",
+      TotalHours: e.total_hours ?? "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Events");
+
+    const now = new Date();
+    const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+      now.getDate()
+    ).padStart(2, "0")}`;
+    const filename = `events-${stamp}.xlsx`;
+
+    const arrayBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([arrayBuffer], { type: "application/octet-stream" }), filename);
   };
 
   return (
@@ -213,7 +239,18 @@ export default function Home() {
           <div className="events-card">
             <div className="events-header">
               <h3>Past Events</h3>
-              <span className="event-count">{sortedEvents.length} Total</span>
+              <div className="events-actions">
+                <span className="event-count">{sortedEvents.length} Total</span>
+                <button
+                  type="button"
+                  className="btn-export"
+                  onClick={handleExportExcel}
+                  disabled={sortedEvents.length === 0}
+                  title={sortedEvents.length === 0 ? "No events to export" : "Export to Excel"}
+                >
+                  Export Excel
+                </button>
+              </div>
             </div>
             <p className="events-subtext">Work logs from calendar</p>
             <div className="events-list">

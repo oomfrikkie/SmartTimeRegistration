@@ -287,6 +287,12 @@
   margin-bottom: 0.4rem;
 }
 
+.events-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .event-count {
   background: #f0f0f0;
   padding: 0.2rem 0.65rem;
@@ -294,6 +300,28 @@
   font-size: 0.7rem;
   font-weight: 600;
   color: #666;
+}
+
+.btn-export {
+  padding: 0.4rem 0.75rem;
+  background: #4a90e2;
+  border: 1px solid #4a90e2;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.btn-export:hover {
+  background: #357abd;
+  border-color: #357abd;
+}
+
+.btn-export:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .events-subtext {
