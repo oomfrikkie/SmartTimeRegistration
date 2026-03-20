@@ -89,9 +89,12 @@ root.render(
         }
 
         sessionStorage.removeItem('msal_login_started')
-        if (window.location.pathname !== '/home') {
-          window.location.replace('/home')
-          return
+        // Use intended redirect target if set
+        const redirectTarget = sessionStorage.getItem('msal_redirect_target') || '/home';
+        sessionStorage.removeItem('msal_redirect_target');
+        if (window.location.pathname !== redirectTarget) {
+          window.location.replace(redirectTarget);
+          return;
         }
       }
     } else {

@@ -42,6 +42,8 @@ function Signup() {
     setIsMicrosoftLoading(true);
     try {
       sessionStorage.setItem("msal_login_started", "1");
+      // Store intended redirect target (e.g., home)
+      sessionStorage.setItem("msal_redirect_target", "/home");
       await instance.loginRedirect({
         scopes: ["openid", "profile", "email"],
         redirectStartPage: `${window.location.origin}/home`,
