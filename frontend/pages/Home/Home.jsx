@@ -100,6 +100,16 @@ export default function Home() {
       TotalHours: e.total_hours ?? "",
     }));
 
+    const totalHoursExport = sortedEvents.reduce((sum, e) => sum + parseFloat(e.total_hours || 0), 0);
+    rows.push({
+      Date: "",
+      Name: "",
+      Project: "",
+      StartTime: "",
+      EndTime: "TOTAL",
+      TotalHours: totalHoursExport.toFixed(2),
+    });
+
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Events");
