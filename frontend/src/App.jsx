@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import NavBar from "../components/NavBar/NavBar";
+import ErrorBoundary from "../components/ErrorBoundary/ErrorBoundary";
 
 import Home from "../pages/Home/Home";
 import Login from "../pages/Login/Login.jsx";
@@ -10,6 +11,7 @@ import Test from '../pages/Test/Test.jsx'
 
 function App() {
   return (
+    <ErrorBoundary>
     <section>
       <header>
         <NavBar />
@@ -26,6 +28,7 @@ function App() {
         
       </Routes>
     </section>
+    </ErrorBoundary>
   );
 }
 
