@@ -8,6 +8,10 @@ export default function Home() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [icsUrl, setIcsUrl] = useState("");
+  const [importStartDate, setImportStartDate] = useState("");
+  const [importEndDate, setImportEndDate] = useState("");
+  const [importing, setImporting] = useState(false);
 
   const accountId = 1; // TODO: Get from session/context
 

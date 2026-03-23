@@ -41,10 +41,17 @@ export class EventService {
       return {
         id: existingEvent.id,
         name: existingEvent.name,
+        package_name: existingEvent.package_name,
+        project_name: existingEvent.project_name,
         start_time: existingEvent.start_time,
         end_time: existingEvent.end_time,
         date: existingEvent.date,
         total_hours: existingEvent.total_hours,
+        location: existingEvent.location,
+        description: existingEvent.description,
+        is_online: existingEvent.is_online,
+        is_series: existingEvent.is_series,
+        attendees: existingEvent.attendees,
         account: {
           id: account.id,
           name: account.name,
@@ -65,10 +72,17 @@ export class EventService {
     return {
       id: savedEvent.id,
       name: savedEvent.name,
+      package_name: savedEvent.package_name,
+      project_name: savedEvent.project_name,
       start_time: savedEvent.start_time,
       end_time: savedEvent.end_time,
       date: savedEvent.date,
       total_hours: savedEvent.total_hours,
+      location: savedEvent.location,
+      description: savedEvent.description,
+      is_online: savedEvent.is_online,
+      is_series: savedEvent.is_series,
+      attendees: savedEvent.attendees,
       account: {
         id: account.id,
         name: account.name,
@@ -88,13 +102,20 @@ export class EventService {
       relations: ['account'],
     });
 
-    return events.map(event => ({
+    return events.map((event) => ({
       id: event.id,
       name: event.name,
+      package_name: event.package_name,
+      project_name: event.project_name,
       start_time: event.start_time,
       end_time: event.end_time,
       date: event.date,
       total_hours: event.total_hours,
+      location: event.location,
+      description: event.description,
+      is_online: event.is_online,
+      is_series: event.is_series,
+      attendees: event.attendees,
       account: {
         id: event.account.id,
         email: event.account.email,
@@ -103,26 +124,33 @@ export class EventService {
   }
 
   async getEventByEmail(email: string) {
-  const events = await this.eventRepo.find({
-    where: {
-      account: {
-        email: email,
+    const events = await this.eventRepo.find({
+      where: {
+        account: {
+          email: email,
+        },
       },
-    },
-    relations: ['account'],
-  });
+      relations: ['account'],
+    });
 
-  return events.map(event => ({
+    return events.map((event) => ({
       id: event.id,
       name: event.name,
+      package_name: event.package_name,
+      project_name: event.project_name,
       start_time: event.start_time,
       end_time: event.end_time,
       date: event.date,
       total_hours: event.total_hours,
+      location: event.location,
+      description: event.description,
+      is_online: event.is_online,
+      is_series: event.is_series,
+      attendees: event.attendees,
       account: {
         id: event.account.id,
         email: event.account.email,
       },
     }));
-}
+  }
 }
