@@ -8,12 +8,26 @@ export default function Home() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [account, setAccount] = useState(null);
 
   const accountId = 1; // TODO: Get from session/context
 
   useEffect(() => {
     fetchEvents();
+    fetchAccount();
   }, []);
+
+  const fetchAccount = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/account/profile", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setAccount(data);
+      }
+    } catch (error) {
+      console.error("Error fetching account:", error);
+    }
+  };
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -91,37 +105,114 @@ export default function Home() {
   };
 
   const handleExportExcel = () => {
-    const rows = sortedEvents.map((e) => ({
-      Date: e.date ?? "",
-      Name: e.name ?? "",
-      Project: typeof e.name === "string" ? e.name.split(" - ")[0] : "",
-      StartTime: e.start_time ?? "",
-      EndTime: e.end_time ?? "",
-      TotalHours: e.total_hours ?? "",
-    }));
+    const contactName = account ? `${account.name} ${account.surname}` : "";
+    const periodeStr =
+      startDate && endDate
+        ? `${formatDateDutch(startDate)} t/m ${formatDateDutch(endDate)}`
+        : startDate
+        ? `Vanaf ${formatDateDutch(startDate)}`
+        : endDate
+        ? `t/m ${formatDateDutch(endDate)}`
+        : "";
+    const jaar =
+      startDate
+        ? new Date(startDate).getFullYear()
+        : sortedEvents.length > 0
+        ? new Date(sortedEvents[sortedEvents.length - 1].date).getFullYear()
+        : new Date().getFullYear();
 
-    const totalHoursExport = sortedEvents.reduce((sum, e) => sum + parseFloat(e.total_hours || 0), 0);
-    rows.push({
-      Date: "",
-      Name: "",
-      Project: "",
-      StartTime: "",
-      EndTime: "TOTAL",
-      TotalHours: totalHoursExport.toFixed(2),
+    const thinBorder = {
+      top: { style: "thin", color: { rgb: "000000" } },
+      left: { style: "thin", color: { rgb: "000000" } },
+      bottom: { style: "thin", color: { rgb: "000000" } },
+      right: { style: "thin", color: { rgb: "000000" } },
+    };
+    const grayFill = { fgColor: { rgb: "D9D9D9" }, patternType: "solid" };
+
+    const wsData = [
+      // Row 0: Konnect / Paraaf werknemer
+      ["Konnect", "", "", "", "Paraaf werknemer"],
+      // Row 1: signature space
+      ["", "", "", "", ""],
+      // Row 2: Urenadministratie / Paraaf verantwoordelijke
+      ["Urenadministratie", "", "", "", "Paraaf verantwoordelijke"],
+      // Row 3: empty
+      [],
+      // Row 4: Contactpersoon
+      ["Contactpersoon:", contactName],
+      // Row 5: Periode
+      ["Periode:", periodeStr],
+      // Row 6: Jaar
+      ["Jaar:", String(jaar)],
+      // Row 7: empty
+      [],
+      // Row 8: Table header
+      ["Datum", "Werkzaamheden", "Werkpakket", "Uren\nIn rekening"],
+    ];
+
+    sortedEvents.forEach((e) => {
+      wsData.push([
+        `Week ${getISOWeek(e.date)}`,
+        e.name ?? "",
+        typeof e.name === "string" ? e.name.split(" - ")[0] : "",
+        parseFloat(e.total_hours || 0),
+      ]);
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const totalHoursExport = sortedEvents.reduce((sum, e) => sum + parseFloat(e.total_hours || 0), 0);
+    wsData.push(["", "", "TOTAAL", totalHoursExport]);
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    ws["!cols"] = [{ wch: 16 }, { wch: 45 }, { wch: 40 }, { wch: 14 }, { wch: 22 }];
+    ws["!rows"] = wsData.map(() => ({}));
+    ws["!rows"][8] = { hpt: 30 };
+
+    // Header block styles
+    setCellStyle(ws, 0, 0, { font: { bold: true, sz: 13 } });
+    setCellStyle(ws, 0, 4, { font: { bold: true } });
+    setCellStyle(ws, 1, 4, { border: thinBorder });
+    setCellStyle(ws, 2, 0, { font: { bold: true, underline: true } });
+    setCellStyle(ws, 2, 4, { font: { bold: true } });
+    setCellStyle(ws, 3, 4, { border: thinBorder });
+    setCellStyle(ws, 4, 0, { font: { bold: true } });
+    setCellStyle(ws, 5, 0, { font: { bold: true } });
+    setCellStyle(ws, 6, 0, { font: { bold: true } });
+
+    // Table header row (row 8)
+    for (let col = 0; col < 4; col++) {
+      setCellStyle(ws, 8, col, {
+        font: { bold: true },
+        fill: grayFill,
+        border: thinBorder,
+        alignment: { horizontal: "center", vertical: "center", wrapText: true },
+      });
+    }
+
+    // Data rows
+    const dataStart = 9;
+    sortedEvents.forEach((_, rowIdx) => {
+      for (let col = 0; col < 4; col++) {
+        setCellStyle(ws, dataStart + rowIdx, col, {
+          border: thinBorder,
+          alignment: col === 3 ? { horizontal: "center" } : { horizontal: "left" },
+        });
+      }
+    });
+
+    // Total row
+    const totalRowIdx = dataStart + sortedEvents.length;
+    setCellStyle(ws, totalRowIdx, 2, { font: { bold: true }, border: thinBorder, alignment: { horizontal: "center" } });
+    setCellStyle(ws, totalRowIdx, 3, { font: { bold: true }, border: thinBorder, alignment: { horizontal: "center" } });
+
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Events");
+    XLSX.utils.book_append_sheet(workbook, ws, "Urenadministratie");
 
     const now = new Date();
-    const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-      now.getDate()
-    ).padStart(2, "0")}`;
-    const filename = `events-${stamp}.xlsx`;
+    const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-    const arrayBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    saveAs(new Blob([arrayBuffer], { type: "application/octet-stream" }), filename);
+    const arrayBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array", cellStyles: true });
+    saveAs(new Blob([arrayBuffer], { type: "application/octet-stream" }), `urenadministratie-${stamp}.xlsx`);
   };
 
   return (
@@ -297,4 +388,25 @@ export default function Home() {
 function timeToMinutes(timeStr) {
   const [hours, minutes] = timeStr.split(":").map(Number);
   return hours * 60 + minutes;
+}
+
+function getISOWeek(dateStr) {
+  const date = new Date(dateStr);
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function formatDateDutch(dateStr) {
+  const months = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+  const d = new Date(dateStr);
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function setCellStyle(ws, row, col, style) {
+  const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+  if (!ws[cellRef]) ws[cellRef] = { v: "", t: "s" };
+  ws[cellRef].s = { ...(ws[cellRef].s || {}), ...style };
 }
