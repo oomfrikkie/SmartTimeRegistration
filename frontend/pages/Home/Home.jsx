@@ -98,20 +98,32 @@ export default function Home() {
     const rows = sortedEvents.map((e) => ({
       Date: e.date ?? "",
       Name: e.name ?? "",
-      Project: typeof e.name === "string" ? e.name.split(" - ")[0] : "",
+      Package: e.package_name ?? "",
+      Project: e.project_name ?? "",
       StartTime: e.start_time ?? "",
       EndTime: e.end_time ?? "",
       TotalHours: e.total_hours ?? "",
+      Location: e.location ?? "",
+      IsOnline: e.is_online ? "Yes" : "No",
+      IsSeries: e.is_series ? "Yes" : "No",
+      Attendees: Array.isArray(e.attendees) ? e.attendees.join(", ") : "",
+      Description: e.description ?? "",
     }));
 
     const totalHoursExport = sortedEvents.reduce((sum, e) => sum + parseFloat(e.total_hours || 0), 0);
     rows.push({
       Date: "",
       Name: "",
+      Package: "",
       Project: "",
       StartTime: "",
       EndTime: "TOTAL",
       TotalHours: totalHoursExport.toFixed(2),
+      Location: "",
+      IsOnline: "",
+      IsSeries: "",
+      Attendees: "",
+      Description: "",
     });
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -280,7 +292,26 @@ export default function Home() {
                       <p className="event-time">
                         {event.date} {event.start_time} - {event.end_time}
                       </p>
-                      <p className="event-type">{event.name.split(" - ")[0]}</p>
+                      {(event.package_name || event.project_name) && (
+                          <p className="event-meta">
+                            {event.package_name && <span>Package: {event.package_name}</span>}
+                            {event.package_name && event.project_name && " · "}
+                            {event.project_name && <span>Project: {event.project_name}</span>}
+                          </p>
+                      )}
+                      {event.location && (
+                          <p className="event-meta"> {event.location}</p>
+                      )}
+                      {event.description && (
+                          <p className="event-meta event-description">{event.description}</p>
+                      )}
+                      {event.attendees?.length > 0 && (
+                          <p className="event-meta"> {event.attendees.join(", ")}</p>
+                      )}
+                      <div className="event-badges">
+                        {event.is_online && <span className="badge badge-online">Online</span>}
+                        {event.is_series && <span className="badge badge-series">Series</span>}
+                      </div>
                     </div>
                     <div className="event-hours">{event.total_hours}h</div>
                   </div>
