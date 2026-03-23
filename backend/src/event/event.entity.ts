@@ -9,6 +9,12 @@ export class Event {
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  package_name: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  project_name: string | null;
+
   @Column({ type: 'time' })
   start_time: string;
 

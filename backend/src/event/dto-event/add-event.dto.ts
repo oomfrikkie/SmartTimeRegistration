@@ -4,6 +4,12 @@ export class AddEventDto {
   @ApiProperty({ example: 'Team Meeting' })
   name: string;
 
+  @ApiProperty({ example: 'NHL Stenden', required: false })
+  package_name?: string;
+
+  @ApiProperty({ example: 'SmartTimeRegistration', required: false })
+  project_name?: string;
+
   @ApiProperty({ example: '09:00:00' })
   start_time: string;
 
@@ -28,7 +34,9 @@ export class AddEventDto {
   @ApiProperty({ example: false })
   is_series?: boolean;
 
-  @ApiProperty({ example: ['sara@example.com', 'felix@example.com'], required: false
+  @ApiProperty({
+    example: ['sara@example.com', 'felix@example.com'],
+    required: false,
   })
   attendees?: string[];
 

@@ -45,6 +45,7 @@ export class ImportService {
         const location =
           (event.getFirstPropertyValue('location') as string | null) ||
           undefined;
+
         const description =
           (event.getFirstPropertyValue('description') as string) ||
           null ||
@@ -71,8 +72,21 @@ export class ImportService {
           })
           .filter(Boolean);
 
+        const titleParts =
+          vevent.summary?.split(' -').map((p) => p.trim()) ?? [];
+        const packageFromTitle = titleParts.length >= 2 ? titleParts[0] : null;
+        const projectFromTitle = titleParts.length >= 2 ? titleParts[1] : null;
+        const packageFromDesc =
+          description?.match(/Package:\s*(.+)/i)?.[1]?.trim() ?? null;
+        const projectFromDesc =
+          description?.match(/Proje {2}ct:\s*(.+)/i)?.[1]?.trim() ?? null;
+        const package_name = packageFromTitle || packageFromDesc || undefined;
+        const project_name = projectFromTitle || projectFromDesc || undefined;
+
         return {
           name: vevent.summary,
+          package_name,
+          project_name,
           date: startTime.toJSDate().toISOString().split('T')[0],
           start_time: startTime.toJSDate().toTimeString().split(' ')[0],
           end_time: endTime.toJSDate().toTimeString().split(' ')[0],

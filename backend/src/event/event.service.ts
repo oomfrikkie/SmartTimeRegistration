@@ -41,6 +41,8 @@ export class EventService {
       return {
         id: existingEvent.id,
         name: existingEvent.name,
+        package_name: existingEvent.package_name,
+        project_name: existingEvent.project_name,
         start_time: existingEvent.start_time,
         end_time: existingEvent.end_time,
         date: existingEvent.date,
@@ -70,6 +72,8 @@ export class EventService {
     return {
       id: savedEvent.id,
       name: savedEvent.name,
+      package_name: savedEvent.package_name,
+      project_name: savedEvent.project_name,
       start_time: savedEvent.start_time,
       end_time: savedEvent.end_time,
       date: savedEvent.date,
@@ -101,6 +105,8 @@ export class EventService {
     return events.map((event) => ({
       id: event.id,
       name: event.name,
+      package_name: event.package_name,
+      project_name: event.project_name,
       start_time: event.start_time,
       end_time: event.end_time,
       date: event.date,
@@ -130,6 +136,8 @@ export class EventService {
     return events.map((event) => ({
       id: event.id,
       name: event.name,
+      package_name: event.package_name,
+      project_name: event.project_name,
       start_time: event.start_time,
       end_time: event.end_time,
       date: event.date,
