@@ -382,6 +382,49 @@
   font-weight: 500;
 }
 
+.event-meta {
+  margin: 0.3rem 0 0 0;
+  color: #777;
+  font-size: 0.75rem;
+}
+
+.event-description {
+  color: #999;
+  font-style: italic;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-badges {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.badge-online {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-series {
+  background: #e8f0ff;
+  color: #3557bd;
+}
+
 .event-hours {
   font-weight: 700;
   font-size: 0.95rem;
