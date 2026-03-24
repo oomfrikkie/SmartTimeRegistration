@@ -46,7 +46,7 @@ function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // 👈 This is crucial! It sends cookies
+        credentials: 'include', // This allows cookies to be sent
       });
 
       const data = await response.json();
@@ -56,13 +56,13 @@ function Login() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Success!
+      // Successfully logged in
       console.log("Login successful:", data);
       
-      // Store user info in localStorage if you want (optional)
+      // Storing user info in localStorage 
       localStorage.setItem('user', JSON.stringify(data.account));
       
-      // Redirect to home page
+      // Redirecting the user to the home page
       navigate("/home");
       
     } catch (error) {

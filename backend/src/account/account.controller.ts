@@ -65,7 +65,7 @@ export class AccountController {
                 }));
             }
 
-            throw error; // Let NestJS handle JSON errors
+            throw error;
         }
     }
 

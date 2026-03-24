@@ -74,7 +74,7 @@ function Signup() {
       return;
     }
 
-    // Email format validation (optional - can rely on backend)
+    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setErrorMessage("Please enter a valid email address");

@@ -97,7 +97,7 @@ export class AccountService {
       throw new BadRequestException('Email and password are required');
     }
 
-    // EMAIL FORMAT CHECK
+    // Checking the format of the email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {
       throw new BadRequestException('Invalid email format. Must contain @ and/or .com');
@@ -139,7 +139,7 @@ export class AccountService {
       throw new UnauthorizedException('Email and password are required');
     }
 
-    // EMAIL FORMAT CHECK
+    // Checking the format of the email to make sure it's valid
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {
       throw new UnauthorizedException('Invalid email format');
@@ -189,5 +189,5 @@ export class AccountService {
     }
     
     return account;
-}
+  }
 }
