@@ -29,10 +29,23 @@ CREATE TABLE project (
     name VARCHAR(255) NOT NULL
 );
 
+-- Example project
+INSERT INTO project (name)
+VALUES ('Smart Time Registration');
+
+-- Enum type for project member roles
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'project_member_role') THEN
+        CREATE TYPE project_member_role AS ENUM ('admin', 'employee');
+    END IF;
+END$$;
+
 -- Project members (many-to-many between account and project)
 CREATE TABLE project_members (
     project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
     account_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    roles project_member_role NOT NULL,
     PRIMARY KEY (project_id, account_id)
 );
 
@@ -44,3 +57,8 @@ CREATE TABLE invitations (
     project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
     status VARCHAR(50) NOT NULL
 );
+
+-- Add John Doe as ADMIN to the first project
+-- Assumes the first project and account have id = 1
+INSERT INTO project_members (project_id, account_id, roles)
+VALUES (1, 1, 'admin');
