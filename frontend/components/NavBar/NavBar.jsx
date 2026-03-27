@@ -8,6 +8,7 @@ export default function NavBar()
                 <NavLink to='/home'>IT Hub Logo</NavLink>
                 <NavLink to='/home'>Home</NavLink>
                 <NavLink to='/login'>Login</NavLink>
+                <NavLink to="/projects">Projects</NavLink>
             </nav>
         </section>
     )

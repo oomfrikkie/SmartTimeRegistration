@@ -8,6 +8,7 @@ import Signup from "../pages/Signup/Signup.jsx";
 import ResetPassword from "../pages/ResetPassword/ResetPassword.jsx";
 import SetNewPassword from "../pages/SetNewPassword/SetNewPassword.jsx";
 import Test from '../pages/Test/Test.jsx'
+import Projects from "../pages/Projects/Projects.jsx";
 
 function App() {
   return (
@@ -25,6 +26,8 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/test" element={<Test />} />
+
+        <Route path="/projects" element={<Projects />} />
         
       </Routes>
     </section>
