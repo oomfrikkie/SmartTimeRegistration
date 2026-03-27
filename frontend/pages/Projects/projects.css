@@ -1,20 +1,18 @@
 .projects-page {
-  padding: 40px;
+  padding: 40px 60px;
 }
 
+/* Header */
 .projects-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
-.create-btn {
-  padding: 10px 20px;
-}
-
+/* Grid */
 .projects-grid {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 25px;
 }

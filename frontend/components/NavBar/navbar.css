@@ -1,5 +1,28 @@
-.nav-links{
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 15px 60px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Left side (logo) */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Right side links */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Links */
+.nav-links {
+  display: flex;
+  gap: 20px;
 }
