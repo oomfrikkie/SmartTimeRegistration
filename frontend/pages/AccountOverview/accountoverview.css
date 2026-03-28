@@ -52,6 +52,12 @@ body {
 
 .icon {
     grid-column: 1 / 2;
+    font-size: 2rem;
+    margin-left: 0.5rem;
+}
+
+.name, .surname, .email {
+    align-items: center;
 }
 
 .name .account-name {
@@ -73,8 +79,12 @@ button {
     margin-bottom: 1rem;
 }
 
-button .icon, button .desc {
+.lock-icon, button .desc {
     color: var(--color-white);
+}
+
+.lock-icon {
+    font-size: 1.5rem;
 }
 
 
@@ -107,6 +117,11 @@ button .icon, button .desc {
 
 .current-projects a, .current-projects a:active, .current-projects a:visited {
     color: var(--color-red);
+}
+
+.arrow-icon {
+    margin-left: 1rem;
+    font-size: 1rem;
 }
 
 /* PREVIOUS PROJECTS SECTION */

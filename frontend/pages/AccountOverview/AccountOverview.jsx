@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import { GoPerson } from 'react-icons/go';
+import { MdOutlineMail } from "react-icons/md";
+import { IoLockClosedOutline } from "react-icons/io5";
+import { FaArrowRight } from "react-icons/fa";
 import './accountoverview.css';
 
 export default function AccountOverview() {
@@ -15,21 +19,21 @@ export default function AccountOverview() {
                 <h2>Personal Information</h2>
                 <div className="form">
                     <div className="name">
-                        <div className="icon">O</div>
+                        <GoPerson className="icon" />
                         <div className="info">
                             <div className="text">Name</div>
                             <div className="account-name">John</div> {/*Must be rendered dynamically*/}
                         </div>
                     </div>
                     <div className="surname">
-                        <div className="icon">O</div>
+                        <GoPerson className="icon" />
                         <div className="info">
                             <div className="text">Surname</div>
                             <div className="account-surname">Doe</div> {/*Must be rendered dynamically*/}
                         </div>
                     </div>
                     <div className="email">
-                        <div className="icon">O</div>
+                        <MdOutlineMail className="icon" />
                         <div className="info">
                             <div className="text">Email</div>
                             <div className="account-email">john.doe@example.com</div> {/*Must be rendered dynamically*/}
@@ -38,7 +42,7 @@ export default function AccountOverview() {
                 </div>
 
                 <button>
-                    <div className="icon">O</div>
+                    <IoLockClosedOutline className="lock-icon" />
                     <div className="desc">Change Password</div>
                 </button>
             </section>
@@ -50,7 +54,7 @@ export default function AccountOverview() {
                         <div className="title">Website Redesign</div>
                         <div className="desc">Developer</div>
                     </div>
-                    <a href="#">View</a>
+                    <a href="#">View<FaArrowRight className="arrow-icon"/></a>
                 </div>  
 
                 <div className="project"> {/*Must be rendered dynamically. Use the API for the projects to retrieve info*/}
@@ -58,7 +62,7 @@ export default function AccountOverview() {
                         <div className="title">Mobile App Development</div>
                         <div className="desc">Team lead</div>
                     </div>
-                    <a href="#">View</a>
+                    <a href="#">View<FaArrowRight className="arrow-icon"/></a>
                 </div>  
             </section>
 
