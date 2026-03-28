@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Event } from '../event/event.entity';
+import { ProjectMember } from 'src/projectmember/projectmember.entity';
 
 @Entity({ name: 'account' })
 export class Account {
@@ -18,12 +19,9 @@ export class Account {
   @Column({ name: 'password', type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ nullable: true })
-  resetPasswordToken: string;
-
-  @Column({ type: 'bigint', nullable: true })
-  resetPasswordExpires: number;
-
   @OneToMany(() => Event, (event) => event.account)
   events: Event[];
+
+  @OneToMany(() => ProjectMember, (member) => member.account)
+  projectMembers: ProjectMember[];
 }

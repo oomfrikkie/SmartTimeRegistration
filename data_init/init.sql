@@ -41,8 +41,9 @@ BEGIN
     END IF;
 END$$;
 
--- Project members (many-to-many between account and project)
-CREATE TABLE project_members (
+
+-- Project member (many-to-many between account and project)
+CREATE TABLE project_member (
     project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
     account_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     roles project_member_role NOT NULL,
@@ -60,5 +61,5 @@ CREATE TABLE invitations (
 
 -- Add John Doe as ADMIN to the first project
 -- Assumes the first project and account have id = 1
-INSERT INTO project_members (project_id, account_id, roles)
+INSERT INTO project_member (project_id, account_id, roles)
 VALUES (1, 1, 'admin');
