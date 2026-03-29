@@ -2,7 +2,7 @@ import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProjectDto {
-  @ApiProperty({ example: 'Smart Time Registration', xml: { name: 'name' } })
+  @ApiProperty({ example: 'Example Project', xml: { name: 'name' } })
   @IsString()
   @IsNotEmpty()
   name: string;

@@ -12,13 +12,31 @@ CREATE TABLE account (
 INSERT INTO account (name, surname, email, password)
 VALUES ('John', 'Doe', 'john.doe@example.com', 'password123');
 
+-- Account token table for email verification and password reset
+CREATE TABLE IF NOT EXISTS account_token (
+    token_id SERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL,
+    token_type VARCHAR(50) NOT NULL, -- 'EMAIL_VERIFICATION' or 'PASSWORD_RESET'
+    expires_at TIMESTAMP NOT NULL,
+    is_used BOOLEAN DEFAULT FALSE,
+    used_at TIMESTAMP NULL,
+    account_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE
+);
+
 CREATE TABLE event (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    package_name VARCHAR(255),
+    project_name VARCHAR(255),
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     date DATE NOT NULL,
     total_hours DECIMAL(5,2) NOT NULL,
+    location VARCHAR(500),
+    description TEXT,
+    is_online BOOLEAN DEFAULT FALSE,
+    is_series BOOLEAN DEFAULT FALSE,
+    attendees JSON,
     account_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE
 );
 

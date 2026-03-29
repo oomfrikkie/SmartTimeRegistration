@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AccountTokenService } from './token/account-token.service';
+import { AccountToken } from './token/account-token.entity';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { Account } from './account.entity';
@@ -22,6 +24,7 @@ export class AccountService {
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
     private readonly mailerService: MailerService,
+    private readonly accountTokenService: AccountTokenService,
   ) {}
 
   async microsoftRegister(
@@ -219,14 +222,18 @@ export class AccountService {
       };
     }
 
-    // Generate a randoem 64 character token as unique key in the rest link
-    const token = crypto.randomBytes(32).toString('hex');
-    const expires = Date.now() + 60 * 60 * 1000; // 1 hour from now
 
-    // Save the data in account to validate later
-    account.resetPasswordToken = token;
-    account.resetPasswordExpires = expires;
-    await this.accountRepo.save(account);
+    // Generate a random 64 character token as unique key in the reset link
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+    // Save the token in the account_token table using DTO
+    await this.accountTokenService.createTokenFromDto({
+      token,
+      token_type: 'PASSWORD_RESET',
+      expires_at: expires,
+      accountId: account.id,
+    }, account);
 
     // Call MailerService to send email with reset link token
     await this.mailerService.sendPasswordResetEmail(account.email, token);
@@ -243,27 +250,25 @@ export class AccountService {
   ): Promise<{
     message: string;
   }> {
-    // Look for account by token instead of email to now which account the link belongs to
-    const account = await this.accountRepo.findOne({
-      where: { resetPasswordToken: token },
-    });
-
-    if (!account) {
+    // Look for token in account_token table
+    const accountTokenDto = await this.accountTokenService.findByToken(token);
+    if (!accountTokenDto || accountTokenDto.is_used) {
       throw new BadRequestException('Invalid or expired reset token');
     }
-
-    if (Date.now() > Number(account.resetPasswordExpires)) {
-      throw new BadRequestException(
-        'Reset token has expired. Please request a new one.',
-      );
+    if (new Date(accountTokenDto.expires_at).getTime() < Date.now()) {
+      throw new BadRequestException('Reset token has expired. Please request a new one.');
     }
 
-    //Clear the token and expired time in database to reuse link
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-    account.password = (await bcrypt.hash(password, 10)) as string;
-    account.resetPasswordToken = null;
-    account.resetPasswordExpires = null;
+    // Set new password for the account
+    const account = await this.accountRepo.findOne({ where: { id: accountTokenDto.accountId } });
+    if (!account) {
+      throw new BadRequestException('Account not found for this token');
+    }
+    account.password = await bcrypt.hash(password, 10);
     await this.accountRepo.save(account);
+
+    // Mark token as used
+    await this.accountTokenService.markAsUsed(token);
 
     return { message: 'Password reset successfully. You can now log in.' };
   }

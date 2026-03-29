@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Event } from '../event/event.entity';
 import { ProjectMember } from 'src/projectmember/projectmember.entity';
+// import { AccountToken } from './token/account-token.entity';
 
 @Entity({ name: 'account' })
 export class Account {
@@ -24,4 +25,8 @@ export class Account {
 
   @OneToMany(() => ProjectMember, (member) => member.account)
   projectMembers: ProjectMember[];
+
+  // Tokens are now managed in AccountToken entity
+  // @OneToMany(() => AccountToken, (token) => token.account)
+  // tokens: AccountToken[];
 }
