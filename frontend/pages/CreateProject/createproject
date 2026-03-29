@@ -1,0 +1,69 @@
+.create-header {
+  margin-bottom: 30px;
+}
+
+/* Project name input */
+.card input {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+/* Layout */
+.create-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+/* LEFT */
+.users-box {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* RIGHT */
+.selected-box {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.selected-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.selected-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* Buttons */
+button {
+  padding: 6px 12px;
+}
