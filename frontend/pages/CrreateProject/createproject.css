@@ -1,0 +1,80 @@
+.create-project-page {
+  padding: 40px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.subtitle {
+  margin-bottom: 20px;
+}
+
+/* Cards */
+.card {
+  background: #f8f9fc;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+/* Layout */
+.project-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.project-layout .card {
+  flex: 1;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Users */
+.user-list {
+  margin-top: 15px;
+}
+
+.user-item,
+.selected-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+/* Buttons */
+button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Create button */
+.create-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  font-weight: bold;
+}
+
+/* Disabled state */
+.create-btn.disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Empty text */
+.empty {
+  text-align: center;
+  margin-top: 20px;
+}
