@@ -10,12 +10,8 @@ function CreateProject() {
   const [search, setSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
 
-  // Fetch users from backend
   useEffect(() => {
-    fetch("http://localhost:3000/users")
-      .then(res => res.json())
-      .then(data => setUsers(data))
-      .catch(err => console.error(err));
+    fetchProjects();
   }, []);
 
   // Filter users (search)
@@ -70,7 +66,7 @@ function CreateProject() {
         });
         }
 
-        navigate("/projects");
+        navigate("../Projects/Projects.jsx");
 
     } catch (err) {
         console.error("Error creating project:", err);
