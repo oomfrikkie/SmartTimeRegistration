@@ -50,7 +50,7 @@ export default function Projects() {
           <h1>Projects</h1>
           <p>Manage and track your projects</p>
         </div>
-        <button className="btn-create-project" onClick={() => navigate("/projects/create")}>
+        <button className="btn-create-project" onClick={() => navigate("../CreateProject/CreateProject.jsx")}>
           Create New Project
         </button>
       </div>
@@ -60,7 +60,7 @@ export default function Projects() {
       ) : projects.length === 0 ? (
         <div className="projects-empty">
           <p>No projects found yet.</p>
-          <button className="btn-create-project" onClick={() => navigate("/projects/create")}>
+          <button className="btn-create-project" onClick={() => navigate("../CreateProject/CreateProject.jsx")}>
             Create Your First Project
           </button>
         </div>
