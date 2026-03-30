@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useMsal } from "@azure/msal-react";
 import "./login.css";
 
 function Login() {
@@ -9,6 +10,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { instance } = useMsal();
 
   const validateEmail = (email) => {
     const regex = /\S+@\S+\.\S+/;
@@ -74,6 +76,20 @@ function Login() {
     }
   };
 
+  const handleMicrosoftLogin = async () => {
+  try {
+    sessionStorage.setItem("msal_login_started", "1");
+    sessionStorage.setItem("msal_redirect_target", "/home");
+
+    await instance.loginRedirect({
+      scopes: ["openid", "profile", "email"],
+      redirectStartPage: `${window.location.origin}/home`,
+    });
+  } catch (error) {
+    console.error("Microsoft login error:", error);
+  }
+};
+
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -115,6 +131,7 @@ function Login() {
           className="microsoft-btn"
           type="button"
           disabled={isLoading}
+          onClick={handleMicrosoftLogin}
         >
           Sign in with Microsoft
         </button>

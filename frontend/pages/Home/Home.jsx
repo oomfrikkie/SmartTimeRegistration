@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { useMsal } from "@azure/msal-react";
 import "./home.css";
 
 export default function Home() {
@@ -13,13 +14,15 @@ export default function Home() {
   const [importStartDate, setImportStartDate] = useState("");
   const [importEndDate, setImportEndDate] = useState("");
   const [importing, setImporting] = useState(false);
+  const { instance } = useMsal();
 
   const accountId = 1; // TODO: Get from session/context
 
-  useEffect(() => {
-    fetchEvents();
-    fetchAccount();
-  }, []);
+ useEffect(() => {
+  syncMicrosoftUser();
+  fetchEvents();
+  fetchAccount();
+}, []);
 
   const fetchAccount = async () => {
     try {
@@ -32,6 +35,49 @@ export default function Home() {
       console.error("Error fetching account:", error);
     }
   };
+
+  const syncMicrosoftUser = async () => {
+  try {
+    const msalAccount =
+      instance.getActiveAccount() || instance.getAllAccounts()[0];
+
+    if (!msalAccount) return;
+
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) return;
+
+    const fullName = msalAccount.name || "";
+    const nameParts = fullName.trim().split(" ");
+    const firstName = nameParts[0] || "Microsoft";
+    const surname = nameParts.slice(1).join(" ") || "User";
+
+    const res = await fetch("http://localhost:3000/account/microsoft-register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email: msalAccount.username,
+        name: firstName,
+        surname,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Microsoft register failed");
+    }
+
+    localStorage.setItem("user", JSON.stringify(data.account));
+    setAccount(data.account);
+    console.log("Microsoft user saved to localStorage:", data.account);
+  } catch (error) {
+    console.error("Error syncing Microsoft user:", error);
+  }
+};
+  
 
   const fetchEvents = async () => {
     setLoading(true);
