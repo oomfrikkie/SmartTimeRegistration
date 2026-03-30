@@ -11,8 +11,20 @@ function CreateProject() {
   const [selectedMembers, setSelectedMembers] = useState([]);
 
   useEffect(() => {
-    fetchProjects();
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/account/all");
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
 
   // Filter users (search)
   const filteredUsers = users.filter(user =>
@@ -66,7 +78,7 @@ function CreateProject() {
         });
         }
 
-        navigate("../Projects/Projects.jsx");
+        navigate("/projects");
 
     } catch (err) {
         console.error("Error creating project:", err);
