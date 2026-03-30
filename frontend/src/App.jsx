@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import {Routes, Route, Navigate, useLocation} from "react-router-dom";
 import NavBar from "../components/NavBar/NavBar";
 import ErrorBoundary from "../components/ErrorBoundary/ErrorBoundary";
 
@@ -12,29 +12,37 @@ import Projects from '../pages/Projects/Projects.jsx'
 import ProjectDetail from '../pages/Projects/ProjectDetail.jsx'
 import CreateProject from '../pages/CreateProject/CreateProject.jsx'
 
+const AUTH_ROUTES = ["/login", "/signup",
+  "/reset-password", "/set-new-password"];
+
 function App() {
+  const location = useLocation();
+  const isAuthPage = AUTH_ROUTES.includes(location.pathname);
   return (
     <ErrorBoundary>
     <section>
-      <header>
-        <NavBar />
-      </header>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/set-new-password" element={<SetNewPassword />} />
+      {!isAuthPage && (
+          <header>
+            <NavBar />
+          </header>
+      )}
 
-        <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/create" element={<CreateProject />} />
-        <Route path="/projects/:name" element={<ProjectDetail />} />
-        <Route path="/test" element={<Test />} />
-        
-      </Routes>
-    </section>
-    </ErrorBoundary>
+      <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/set-new-password" element={<SetNewPassword />} />
+
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/create" element={<CreateProject />} />
+            <Route path="/projects/:name" element={<ProjectDetail />} />
+            <Route path="/test" element={<Test />} />
+
+          </Routes>
+        </section>
+        </ErrorBoundary>
   );
 }
 
