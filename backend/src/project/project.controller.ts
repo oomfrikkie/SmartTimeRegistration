@@ -17,12 +17,14 @@ async getAllProjects() {
 }
 
 @Get('by-account')
-async getProjectsByAccountId(@Query('account_id') account_id: string) {
+getProjectsByAccount(@Query('account_id') account_id: string) {
   return this.projectService.getProjectsByAccountID(Number(account_id));
 }
 
-@Get(':project_id/members')
+@Get('members')
 getProjectMembers(@Query('project_id') project_id: string) {
   return this.projectService.getProjectMembers(Number(project_id));
 }
+
+
 }

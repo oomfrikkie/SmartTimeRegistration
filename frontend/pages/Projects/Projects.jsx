@@ -5,6 +5,7 @@ import "./projects.css";
 export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userID, setUserID] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +16,22 @@ export default function Projects() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3000/projects?account_id=1");
+      const storedUser = localStorage.getItem("user");
+
+      if (!storedUser) {
+        throw new Error("No user found in localStorage");
+      }
+
+      const user = JSON.parse(storedUser);
+
+      if (!user?.id) {
+        throw new Error("User ID not found in localStorage");
+      }
+
+      const accountId = user.id;
+      setUserID(accountId);
+
+    const res = await fetch(`http://localhost:3000/projects/by-account?account_id=${accountId}`);
 
       if (!res.ok) {
         throw new Error("Failed to fetch projects");
@@ -73,19 +89,37 @@ export default function Projects() {
               <h2 className="project-name">{project.name}</h2>
 
               <div className="project-detail">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a4e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#1a1a4e"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
                 <span>{project.memberCount} members</span>
               </div>
 
               <div className="project-detail">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a4e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#1a1a4e"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
                 </svg>
                 <span>{project.totalHours} hours logged</span>
               </div>

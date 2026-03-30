@@ -25,6 +25,7 @@ import { AccountTokenModule } from './account/token/account-token.module';
         database: config.get<string>('POSTGRES_DB') || 'mydb',
         autoLoadEntities: true,
         synchronize: false,
+        logging: ['query', 'error', 'warn'],
       }),
     }),
 
