@@ -59,4 +59,44 @@ export class ProjectService {
     relations: ['members', 'members.account'],
   });
 }
+
+async getProjectsByAccountID(account_id: number): Promise<Project[]> {
+  const account = await this.accountRepo.findOne({
+    where: { id: account_id },
+  });
+
+  if (!account) {
+    throw new NotFoundException(`Account with id ${account_id} not found`);
+  }
+
+  return this.projectRepo.find({
+    where: {
+      members: {
+        account: {
+          id: account_id,
+        },
+      },
+    },
+    relations: ['members', 'members.account'],
+  });
+}
+
+async getProjectMembers(project_id: number): Promise<ProjectMember[]> {
+  const project = await this.projectRepo.findOne({
+    where: { id: project_id },
+  });
+
+  if (!project) {
+    throw new NotFoundException(`Project with id ${project_id} not found`);
+  }
+
+  return this.projectMemberRepo.find({
+    where: {
+      project: {
+        id: project_id,
+      },
+    },
+    relations: ['account', 'project'],
+  });
+}
 }

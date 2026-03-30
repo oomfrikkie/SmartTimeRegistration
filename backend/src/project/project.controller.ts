@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query} from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto-project/create-project.dto';
 
@@ -11,8 +11,18 @@ export class ProjectController {
     return this.projectService.create(dto);
   }
 
-  @Get()
-  async getAllProjects() {
-    return this.projectService.getAllProjects();
-  }
+ @Get()
+async getAllProjects() {
+  return this.projectService.getAllProjects();
+}
+
+@Get('by-account')
+async getProjectsByAccountId(@Query('account_id') account_id: string) {
+  return this.projectService.getProjectsByAccountID(Number(account_id));
+}
+
+@Get(':project_id/members')
+getProjectMembers(@Query('project_id') project_id: string) {
+  return this.projectService.getProjectMembers(Number(project_id));
+}
 }
