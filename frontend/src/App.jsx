@@ -32,17 +32,16 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/set-new-password" element={<SetNewPassword />} />
-
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/create" element={<CreateProject />} />
-            <Route path="/projects/:name" element={<ProjectDetail />} />
+            <Route path="/projects/:projectId/:name" element={<ProjectDetail />} />
             <Route path="/test" element={<Test />} />
-
-          </Routes>
-        </section>
-        </ErrorBoundary>
+        
+      </Routes>
+    </section>
+    </ErrorBoundary>
   );
 }
 

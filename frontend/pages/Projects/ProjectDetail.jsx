@@ -5,7 +5,7 @@ import { saveAs } from "file-saver";
 import "./projectDetail.css";
 
 export default function ProjectDetail() {
-  const { name } = useParams();
+  const { projectId, name } = useParams();
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,38 +18,34 @@ export default function ProjectDetail() {
   }, [name]);
 
   const fetchProjectMembers = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:3000/event?account_id=1");
-      const events = await res.json();
+  setLoading(true);
 
-      // Filter events for this project and group by member
-      const memberMap = {};
-      (events || []).forEach((event) => {
-        const evtProject = event.project_name || event.name || "Unnamed Project";
-        if (evtProject !== projectName) return;
+  try {
+    const res = await fetch(`http://localhost:3000/projects?=${projectId}/members`);
+    const members = await res.json();
 
-        const memberName = event.account?.name || event.account?.email || "Unknown";
-        const memberId = event.account?.id || memberName;
+    const memberMap = {};
 
-        if (!memberMap[memberId]) {
-          memberMap[memberId] = {
-            id: memberId,
-            name: memberName,
-            totalHours: 0,
-            events: [],
-          };
-        }
-        memberMap[memberId].totalHours += parseFloat(event.total_hours || 0);
-        memberMap[memberId].events.push(event);
-      });
+    (members || []).forEach((member) => {
+      const memberName =
+        member.account?.name || member.account?.email || "Unknown";
 
-      setMembers(Object.values(memberMap));
-    } catch (error) {
-      console.error("Error fetching project members:", error);
-    }
+      const memberId = member.account?.id;
+
+      memberMap[memberId] = {
+        id: memberId,
+        name: memberName,
+        role: member.roles,
+      };
+    });
+
+    setMembers(Object.values(memberMap));
+  } catch (err) {
+    console.error(err);
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   const getInitial = (memberName) => {
     return memberName.charAt(0).toUpperCase();

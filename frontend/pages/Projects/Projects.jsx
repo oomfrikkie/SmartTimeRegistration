@@ -13,34 +13,30 @@ export default function Projects() {
 
   const fetchProjects = async () => {
     setLoading(true);
+
     try {
-      const res = await fetch("http://localhost:3000/event?account_id=1");
-      const events = await res.json();
+      const res = await fetch("http://localhost:3000/projects?account_id=1");
 
-      // Group events by project_name to derive project list
-      const projectMap = {};
-      (events || []).forEach((event) => {
-        const name = event.project_name || event.name || "Unnamed Project";
-        if (!projectMap[name]) {
-          projectMap[name] = { name, totalHours: 0, members: new Set() };
-        }
-        projectMap[name].totalHours += parseFloat(event.total_hours || 0);
-        if (event.account) {
-          projectMap[name].members.add(event.account.id || event.account);
-        }
-      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch projects");
+      }
 
-      const projectList = Object.values(projectMap).map((p) => ({
-        name: p.name,
-        totalHours: Math.round(p.totalHours * 10) / 10,
-        memberCount: Math.max(p.members.size, 1),
+      const data = await res.json();
+
+      const projectList = (data || []).map((project) => ({
+        id: project.id,
+        name: project.name || "Unnamed Project",
+        memberCount: project.members ? project.members.length : 0,
+        totalHours: 0,
       }));
 
       setProjects(projectList);
     } catch (error) {
       console.error("Error fetching projects:", error);
+      setProjects([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -50,7 +46,10 @@ export default function Projects() {
           <h1>Projects</h1>
           <p>Manage and track your projects</p>
         </div>
-        <button className="btn-create-project" onClick={() => navigate("/projects/create")}>
+        <button
+          className="btn-create-project"
+          onClick={() => navigate("/projects/create")}
+        >
           Create New Project
         </button>
       </div>
@@ -60,15 +59,19 @@ export default function Projects() {
       ) : projects.length === 0 ? (
         <div className="projects-empty">
           <p>No projects found yet.</p>
-          <button className="btn-create-project" onClick={() => navigate("/projects/create")}>
+          <button
+            className="btn-create-project"
+            onClick={() => navigate("/projects/create")}
+          >
             Create Your First Project
           </button>
         </div>
       ) : (
         <div className="projects-grid">
-          {projects.map((project, index) => (
-            <div className="project-card" key={index}>
+          {projects.map((project) => (
+            <div className="project-card" key={project.id}>
               <h2 className="project-name">{project.name}</h2>
+
               <div className="project-detail">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a4e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -78,6 +81,7 @@ export default function Projects() {
                 </svg>
                 <span>{project.memberCount} members</span>
               </div>
+
               <div className="project-detail">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a4e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
@@ -85,7 +89,13 @@ export default function Projects() {
                 </svg>
                 <span>{project.totalHours} hours logged</span>
               </div>
-              <button className="btn-view-project" onClick={() => navigate(`/projects/${encodeURIComponent(project.name)}`)}>
+
+              <button
+                className="btn-view-project"
+                onClick={() =>
+                  navigate(`/projects/${project.id}/${encodeURIComponent(project.name)}`)
+                }
+              >
                 View Project
               </button>
             </div>
