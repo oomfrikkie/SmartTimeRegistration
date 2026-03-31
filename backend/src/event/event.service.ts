@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Event } from './event.entity';
 import { Account } from '../account/account.entity';
 import { AddEventDto } from './dto-event/add-event.dto';
+import { TextFilterEventDto } from './dto-event/text-filter-event.dto';
 
 @Injectable()
 export class EventService {
@@ -153,4 +154,42 @@ export class EventService {
       },
     }));
   }
+
+async getEventByAccountIdTextFiltered(dto: TextFilterEventDto): Promise<Event[]> {
+  const events = await this.eventRepo.find({
+    where: {
+      account: {
+        id: dto.account_id,
+      },
+      ...(dto.project_name?.trim()
+        ? { project_name: ILike(`%${dto.project_name.trim()}%`) }
+        : {}),
+    },
+  });
+
+  if (events.length === 0) {
+    throw new NotFoundException("No events can be found");
+  }
+
+ const getPackageNumber = (pkg?: string | null): number => {
+  if (!pkg) return 9999;
+
+  const match = pkg.match(/\d+/);
+  return match ? parseInt(match[0], 10) : 9999;
+};
+
+  const sorted = events.sort((a, b) => {
+    const pkgA = getPackageNumber(a.package_name);
+    const pkgB = getPackageNumber(b.package_name);
+
+    if (pkgA !== pkgB) {
+      return pkgA - pkgB; // WP1 → WP2 → WP10
+    }
+
+    // if same package → newest date first
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
+  return sorted;
+}
 }
