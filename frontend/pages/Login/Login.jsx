@@ -1,15 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useMsal } from "@azure/msal-react";
 import "./login.css";
 
 function Login() {
-
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { instance } = useMsal();
 
   const validateEmail = (email) => {
     const regex = /\S+@\S+\.\S+/;
@@ -17,7 +18,6 @@ function Login() {
   };
 
   const handleLogin = async () => {
-
     if (!email || !password) {
       setError("Please enter your email and password.");
       return;
@@ -28,7 +28,7 @@ function Login() {
       return;
     }
 
-    if(password.length < 6){
+    if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
     }
@@ -36,53 +36,78 @@ function Login() {
     setError("");
     setIsLoading(true);
 
-    // API call to authenticate user here
     try {
       console.log("Attempting login with:", { email });
 
-      const response = await fetch('http://localhost:3000/account/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/account/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // This allows cookies to be sent
+        credentials: "include",
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+
       console.log("Login response:", data);
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || "Login failed");
       }
 
-      // Successfully logged in
       console.log("Login successful:", data);
-      
-      // Storing user info in localStorage 
-      localStorage.setItem('user', JSON.stringify(data.account));
-      
-      // Redirecting the user to the home page
+
+      if (data.account) {
+        localStorage.setItem("user", JSON.stringify(data.account));
+      }
+
       navigate("/home");
-      
     } catch (error) {
       console.error("Login error:", error);
       setError(error.message || "Failed to connect to server. Make sure the backend is running.");
     } finally {
       setIsLoading(false);
     }
-
-    navigate("/home");
   };
+
+  const handleMicrosoftLogin = async () => {
+  try {
+    sessionStorage.setItem("msal_login_started", "1");
+    sessionStorage.setItem("msal_redirect_target", "/home");
+
+    await instance.loginRedirect({
+      scopes: ["openid", "profile", "email"],
+      redirectStartPage: `${window.location.origin}/home`,
+    });
+  } catch (error) {
+    console.error("Microsoft login error:", error);
+  }
+};
 
   return (
     <div className="auth-page">
-
       <div className="auth-card">
-
         <h2>Smart Time Registration</h2>
 
-        {error && <p className="error" style={{ color: 'red', padding: '10px', background: '#ffeeee', borderRadius: '4px' }}>{error}</p>}
+        {error && (
+          <p
+            className="error"
+            style={{
+              color: "red",
+              padding: "10px",
+              background: "#ffeeee",
+              borderRadius: "4px",
+            }}
+          >
+            {error}
+          </p>
+        )}
 
         <label>Email</label>
         <input
@@ -102,26 +127,28 @@ function Login() {
           disabled={isLoading}
         />
 
-        <button 
+        <button
           className="microsoft-btn"
           type="button"
           disabled={isLoading}
-          >
+          onClick={handleMicrosoftLogin}
+        >
           Sign in with Microsoft
         </button>
 
         <button
           className="primary-btn"
+          type="button"
           onClick={handleLogin}
+          disabled={isLoading}
         >
-          Login
+          {isLoading ? "Logging in..." : "Login"}
         </button>
 
         <div className="auth-links">
           <Link to="/reset-password">Forgot password?</Link>
           <Link to="/signup">Sign up</Link>
         </div>
-
       </div>
     </div>
   );

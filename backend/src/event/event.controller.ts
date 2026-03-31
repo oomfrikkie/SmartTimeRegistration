@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Query } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, Param, ParseIntPipe } from '@nestjs/common';
 import { EventByEmailResponseDto } from './dto-event/event-by-email-response.dto';
 import { EventService } from './event.service';
 import { AddEventDto } from './dto-event/add-event.dto';
@@ -22,5 +22,16 @@ export class EventController {
   @Get('email')
   async getEventByEmail(@Query('email') email: string): Promise<EventByEmailResponseDto[]> {
     return this.eventService.getEventByEmail(email);
+  }
+
+  @Get(':account_id')
+  async getEventByAccountIdTextFiltered(
+    @Param('account_id', ParseIntPipe) account_id: number,
+    @Query('project_name') project_name?: string,
+  ): Promise<Event[]> {
+    return await this.eventService.getEventByAccountIdTextFiltered({
+      account_id,
+      project_name,
+    });
   }
 }

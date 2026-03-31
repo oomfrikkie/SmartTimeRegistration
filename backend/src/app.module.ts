@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { ImportModule } from './import/import.module';
 import { EventModule } from './event/event.module';
 import { AccountModule } from './account/account.module';
+import { ProjectModule } from './project/project.module';
+import { AccountTokenModule } from './account/token/account-token.module';
 
 @Module({
   imports: [
@@ -22,13 +24,16 @@ import { AccountModule } from './account/account.module';
         password: config.get<string>('POSTGRES_PASSWORD') || 'admin',
         database: config.get<string>('POSTGRES_DB') || 'mydb',
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
+        logging: ['query', 'error', 'warn'],
       }),
     }),
 
     ImportModule,
     EventModule,
     AccountModule,
+    ProjectModule,
+    AccountTokenModule,
   ],
   controllers: [AppController],
   providers: [AppService],

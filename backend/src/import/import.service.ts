@@ -19,7 +19,6 @@ export class ImportService {
     const response = await fetch(icsUrl);
     const icsText = await response.text();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = ICAL.parse(icsText);
     const component = new ICAL.Component(parsed);
     const events = component.getAllSubcomponents('vevent');
@@ -47,15 +46,16 @@ export class ImportService {
           undefined;
 
         const description =
-          (event.getFirstPropertyValue('description') as string) ||
-          null ||
+          (event.getFirstPropertyValue('description') as string | null) ||
           undefined;
+
         const is_series = !!event.getFirstProperty('rrule');
+
         const is_online =
-          !!(location && location?.toLowerCase().includes('teams')) ||
+          !!(location && location.toLowerCase().includes('teams')) ||
           !!(
             description &&
-            description?.toLowerCase().includes('microsoft teams')
+            description.toLowerCase().includes('microsoft teams')
           ) ||
           !!event.getFirstProperty('x-microsoft-skypeteamsmeetingurl');
 
@@ -72,16 +72,27 @@ export class ImportService {
           })
           .filter(Boolean);
 
-        const titleParts =
-          vevent.summary?.split(' -').map((p) => p.trim()) ?? [];
-        const packageFromTitle = titleParts.length >= 2 ? titleParts[0] : null;
-        const projectFromTitle = titleParts.length >= 2 ? titleParts[1] : null;
-        const packageFromDesc =
-          description?.match(/Package:\s*(.+)/i)?.[1]?.trim() ?? null;
-        const projectFromDesc =
-          description?.match(/Proje {2}ct:\s*(.+)/i)?.[1]?.trim() ?? null;
-        const package_name = packageFromTitle || packageFromDesc || undefined;
-        const project_name = projectFromTitle || projectFromDesc || undefined;
+        const project_name =
+          vevent.summary?.split(' - ')[0]?.trim() || undefined;
+
+        let package_name: string | undefined;
+
+        if (description) {
+          const cleanedDescription = description.trim();
+
+          const packageMatch = cleanedDescription.match(
+            /^(wp\s*[a-z0-9]+|work\s*package\s+[a-z0-9]+|package\s+[a-z0-9]+)$/i,
+          );
+
+          const labeledPackageMatch = cleanedDescription.match(
+            /^(?:wp|work\s*package|package)\s*:\s*([a-z0-9 ]+)$/i,
+          );
+
+          package_name =
+            packageMatch?.[1]?.trim() ||
+            labeledPackageMatch?.[1]?.trim() ||
+            undefined;
+        }
 
         return {
           name: vevent.summary,

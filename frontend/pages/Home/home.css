@@ -1,6 +1,6 @@
 .home-container {
-  padding: 2em;
-  background: #f8f9fa;
+  padding: 2rem;
+  background: var(--color-bg-primary);
   min-height: 100vh;
 }
 

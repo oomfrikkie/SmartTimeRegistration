@@ -1,6 +1,12 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AccountTokenService } from './token/account-token.service';
+import { AccountToken } from './token/account-token.entity';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { Account } from './account.entity';
@@ -10,6 +16,7 @@ import { AccountDto } from './dto-account/account.dto';
 import { MicrosoftRegisterDto } from './dto-account/microsoft-register.dto';
 import { Request } from 'express';
 import 'express-session';
+import { MailerService } from './mailer.service';
 
 
 @Injectable()
@@ -17,8 +24,9 @@ export class AccountService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
+    private readonly mailerService: MailerService,
+    private readonly accountTokenService: AccountTokenService,
   ) {}
-
 
   async microsoftRegister(
     dto: MicrosoftRegisterDto,
@@ -93,7 +101,9 @@ export class AccountService {
     };
   }
   // Account creation
-  async create(dto: CreateAccountDto): Promise<{ message: string; account: AccountDto }> {
+  async create(
+    dto: CreateAccountDto,
+  ): Promise<{ message: string; account: AccountDto }> {
     if (!dto || !dto.email || !dto.password) {
       throw new BadRequestException('Email and password are required');
     }
@@ -101,7 +111,9 @@ export class AccountService {
     // Checking the format of the email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {
-      throw new BadRequestException('Invalid email format. Must contain @ and/or .com');
+      throw new BadRequestException(
+        'Invalid email format. Must contain @ and/or .com',
+      );
     }
 
     const existing = await this.accountRepo.findOne({
@@ -109,7 +121,9 @@ export class AccountService {
     });
 
     if (existing) {
-      throw new BadRequestException('An account with this email already exists');
+      throw new BadRequestException(
+        'An account with this email already exists',
+      );
     }
 
     const hashed = await bcrypt.hash(dto.password, 10);
@@ -122,7 +136,7 @@ export class AccountService {
     });
 
     const savedAccount = await this.accountRepo.save(newAccount);
-    
+
     return {
       message: 'Account created',
       account: Object.assign(new AccountDto(), {
@@ -135,7 +149,10 @@ export class AccountService {
   }
 
   //Logging in to an existing account
-  async login(dto: LoginDto, req: Request): Promise<{ message: string; account: Partial<Account> }> {
+  async login(
+    dto: LoginDto,
+    req: Request,
+  ): Promise<{ message: string; account: Partial<Account> }> {
     if (!dto || !dto.email || !dto.password) {
       throw new UnauthorizedException('Email and password are required');
     }
@@ -148,7 +165,7 @@ export class AccountService {
 
     const account = await this.accountRepo.findOne({
       where: { email: dto.email },
-      select: ['id', 'email', 'password', 'name', 'surname']
+      select: ['id', 'email', 'password', 'name', 'surname'],
     });
 
     if (!account) {
@@ -180,15 +197,107 @@ export class AccountService {
   async findById(id: string): Promise<Partial<Account>> {
     const numericId = parseInt(id, 10);
 
-    const account = await this.accountRepo.findOne({ 
-        where: { id: numericId },
-        select: ['id', 'email', 'name', 'surname'] 
+    const account = await this.accountRepo.findOne({
+      where: { id: numericId },
+      select: ['id', 'email', 'name', 'surname'],
     });
-    
+
     if (!account) {
-        throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('User not found');
     }
-    
+
     return account;
+  }
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const account = await this.accountRepo.findOne({
+      where: { email: normalizedEmail },
+    });
+
+    // Return a succeed message to protect email information
+    if (!account) {
+      return {
+        message:
+          'If an account with that email exists, a reset link has been sent.',
+      };
+    }
+
+
+    // Generate a random 64 character token as unique key in the reset link
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+    // Save the token in the account_token table using DTO
+    await this.accountTokenService.createTokenFromDto({
+      token,
+      token_type: 'PASSWORD_RESET',
+      expires_at: expires,
+      accountId: account.id,
+    }, account);
+
+    // Call MailerService to send email with reset link token
+    await this.mailerService.sendPasswordResetEmail(account.email, token);
+
+    return {
+      message:
+        'If an account with that email exists, a reset link has been sent.',
+    };
+  }
+
+  async setNewPassword(
+    token: string,
+    password: string,
+  ): Promise<{
+    message: string;
+  }> {
+    // Look for token in account_token table
+    const accountTokenDto = await this.accountTokenService.findByToken(token);
+    if (!accountTokenDto || accountTokenDto.is_used) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+    if (new Date(accountTokenDto.expires_at).getTime() < Date.now()) {
+      throw new BadRequestException('Reset token has expired. Please request a new one.');
+    }
+
+    // Set new password for the account
+    const account = await this.accountRepo.findOne({ where: { id: accountTokenDto.accountId } });
+    if (!account) {
+      throw new BadRequestException('Account not found for this token');
+    }
+    account.password = await bcrypt.hash(password, 10);
+    await this.accountRepo.save(account);
+
+    // Mark token as used
+    await this.accountTokenService.markAsUsed(token);
+
+    return { message: 'Password reset successfully. You can now log in.' };
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const account = await this.accountRepo.findOne({
+      where: { id: parseInt(userId) },
+      select: ['id', 'password'],
+    });
+
+    if (!account) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+    const match = await bcrypt.compare(currentPassword, account.password);
+    if (!match) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+    account.password = (await bcrypt.hash(newPassword, 10)) as string;
+    await this.accountRepo.save(account);
+
+    return { message: 'Password changed successfully' };
   }
 }
