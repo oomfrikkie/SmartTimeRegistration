@@ -26,7 +26,7 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/account-overview" element={<AccountOverview />} />
+        <Route path="/account" element={<AccountOverview />} />
         
       </Routes>
     </section>

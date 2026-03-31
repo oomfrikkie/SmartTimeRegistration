@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GoPerson } from 'react-icons/go';
 import { MdOutlineMail } from "react-icons/md";
 import { IoLockClosedOutline } from "react-icons/io5";
@@ -6,7 +6,16 @@ import { FaArrowRight } from "react-icons/fa";
 import './accountoverview.css';
 
 export default function AccountOverview() {
-    const [account, setAccount] = useState(null);
+    const [user, setUser] = useState(null);
+    // const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+        // setLoading(false);
+    }, []);
 
     return (
         <div className="account-overview-container">
@@ -22,21 +31,21 @@ export default function AccountOverview() {
                         <GoPerson className="icon" />
                         <div className="info">
                             <div className="text">Name</div>
-                            <div className="account-name">John</div> {/*Must be rendered dynamically*/}
+                            <div className="account-name">{ user?.name }</div>
                         </div>
                     </div>
                     <div className="surname">
                         <GoPerson className="icon" />
                         <div className="info">
                             <div className="text">Surname</div>
-                            <div className="account-surname">Doe</div> {/*Must be rendered dynamically*/}
+                            <div className="account-surname">{ user?.surname }</div>
                         </div>
                     </div>
                     <div className="email">
                         <MdOutlineMail className="icon" />
                         <div className="info">
                             <div className="text">Email</div>
-                            <div className="account-email">john.doe@example.com</div> {/*Must be rendered dynamically*/}
+                            <div className="account-email">{ user?.email }</div>
                         </div>
                     </div>
                 </div>
