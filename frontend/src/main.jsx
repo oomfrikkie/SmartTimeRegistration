@@ -13,7 +13,7 @@ const REDIRECT_URI = `${window.location.origin}/`
 const msalInstance = new PublicClientApplication({
   auth: {
     clientId: CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${TENANT_ID}`,
+    authority: "https://login.microsoftonline.com/common",
     redirectUri: REDIRECT_URI,
     navigateToLoginRequestUrl: false,
   },
