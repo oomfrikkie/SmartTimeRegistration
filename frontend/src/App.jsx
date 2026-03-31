@@ -11,10 +11,11 @@ import Test from '../pages/Test/Test.jsx'
 import Projects from '../pages/Projects/Projects.jsx'
 import ProjectDetail from '../pages/Projects/ProjectDetail.jsx'
 import CreateProject from '../pages/CreateProject/CreateProject.jsx'
+import AccountOverview from "../pages/AccountOverview/AccountOverview.jsx";
 
 const AUTH_ROUTES = ["/login", "/signup",
   "/reset-password", "/set-new-password"];
-import AccountOverview from "../pages/AccountOverview/AccountOverview.jsx"
+
 
 function App() {
   const location = useLocation();
@@ -31,6 +32,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/account" element={<AccountOverview />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/set-new-password" element={<SetNewPassword />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
