@@ -223,18 +223,20 @@ export class AccountService {
       };
     }
 
-
     // Generate a random 64 character token as unique key in the reset link
     const token = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
 
     // Save the token in the account_token table using DTO
-    await this.accountTokenService.createTokenFromDto({
-      token,
-      token_type: 'PASSWORD_RESET',
-      expires_at: expires,
-      accountId: account.id,
-    }, account);
+    await this.accountTokenService.createTokenFromDto(
+      {
+        token,
+        token_type: 'PASSWORD_RESET',
+        expires_at: expires,
+        accountId: account.id,
+      },
+      account,
+    );
 
     // Call MailerService to send email with reset link token
     await this.mailerService.sendPasswordResetEmail(account.email, token);
@@ -257,11 +259,15 @@ export class AccountService {
       throw new BadRequestException('Invalid or expired reset token');
     }
     if (new Date(accountTokenDto.expires_at).getTime() < Date.now()) {
-      throw new BadRequestException('Reset token has expired. Please request a new one.');
+      throw new BadRequestException(
+        'Reset token has expired. Please request a new one.',
+      );
     }
 
     // Set new password for the account
-    const account = await this.accountRepo.findOne({ where: { id: accountTokenDto.accountId } });
+    const account = await this.accountRepo.findOne({
+      where: { id: accountTokenDto.accountId },
+    });
     if (!account) {
       throw new BadRequestException('Account not found for this token');
     }
