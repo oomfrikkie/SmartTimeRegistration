@@ -64,7 +64,7 @@ body {
     grid: 2 / 3;
 }
 
-button {
+.personal-information button {
     margin-top: 1rem;
     width: 15%;
     height: 2.5rem;
@@ -116,8 +116,10 @@ button {
     margin-bottom: 2rem;
 }
 
-.current-projects a, .current-projects a:active, .current-projects a:visited {
+.view-project-button * {
+    background-color: var(--color-white);
     color: var(--color-red);
+    font-weight: bold;
 }
 
 .arrow-icon {

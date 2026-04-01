@@ -103,7 +103,15 @@ export default function AccountOverview() {
                         {projects.map(project => (
                             <div className="project" key={project.id}>
                                 <div className="title">{project.name}</div>
-                                <a href="#">View<FaArrowRight className="arrow-icon"/></a>
+                                <div className="view-project-button">
+                                    <button 
+                                        onClick={() => 
+                                            navigate(`/projects/${project.id}/${encodeURIComponent(project.name)}`)
+                                        }
+                                    >
+                                        <span>View</span><FaArrowRight className="arrow-icon"/>
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
