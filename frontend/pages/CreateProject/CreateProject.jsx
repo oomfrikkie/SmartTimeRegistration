@@ -49,7 +49,7 @@ function CreateProject() {
 
     try {
       // 1. Create the project
-      const projectRes = await fetch("http://localhost:3000/project", {
+      const projectRes = await fetch("http://localhost:3000/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
