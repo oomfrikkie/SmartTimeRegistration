@@ -99,7 +99,7 @@ export default function AccountOverview() {
                 <h2>Current Projects</h2>
 
                 {projects.length === 0 ? (
-                    <p>No projects found yet.</p>
+                    <p>You are curretly not part of any project.</p>
                 ) : (
                     <div className="projects-list">
                         {projects.map(project => (
