@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./notification.css";
 import { CgBell } from "react-icons/cg";
 
