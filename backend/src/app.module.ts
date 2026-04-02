@@ -8,6 +8,7 @@ import { EventModule } from './event/event.module';
 import { AccountModule } from './account/account.module';
 import { ProjectModule } from './project/project.module';
 import { AccountTokenModule } from './account/token/account-token.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AccountTokenModule } from './account/token/account-token.module';
     AccountModule,
     ProjectModule,
     AccountTokenModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

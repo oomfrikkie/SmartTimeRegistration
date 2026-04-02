@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { getUserFromToken, getAuthHeaders } from "../../src/utils/auth";
 import "./projectDetail.css";
 
 export default function ProjectDetail() {
@@ -19,16 +20,10 @@ useEffect(() => {
 
 const fetchCurrentUsersRole = async () => {
   try {
-    const storedUser = localStorage.getItem("user");
+    const user = getUserFromToken();
 
-    if (!storedUser) {
-      throw new Error("No user found in localStorage");
-    }
-
-    const user = JSON.parse(storedUser);
-
-    if (!user?.id) {
-      throw new Error("User ID not found");
+    if (!user) {
+      throw new Error("No user found in token");
     }
 
     const accountId = user.id;
@@ -36,7 +31,10 @@ const fetchCurrentUsersRole = async () => {
     setUserID(accountId);
 
     const res = await fetch(
-      `http://localhost:3000/projects/${projectId}/my-role?account_id=${accountId}`
+      `http://localhost:3000/projects/${projectId}/my-role?account_id=${accountId}`,
+      {
+        headers: getAuthHeaders()
+      }
     );
 
     if (!res.ok) {
@@ -63,7 +61,10 @@ const fetchCurrentUsersRole = async () => {
 
   try {
     const res = await fetch(
-  `http://localhost:3000/projects/members?project_id=${projectId}`
+  `http://localhost:3000/projects/members?project_id=${projectId}`,
+  {
+    headers: getAuthHeaders()
+  }
 );
 
 console.log("status:", res.status);

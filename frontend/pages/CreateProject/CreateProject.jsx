@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../src/utils/auth";
 import "./createproject.css";
 
 function CreateProject() {
@@ -16,7 +17,9 @@ function CreateProject() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:3000/account/all");
+      const res = await fetch("http://localhost:3000/account/all", {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setUsers(data || []);
@@ -53,9 +56,7 @@ function CreateProject() {
         for (const member of selectedMembers) {
         await fetch("http://localhost:3000/event", {
             method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
             name: "Project Initialization", // required
             project_name: projectName,

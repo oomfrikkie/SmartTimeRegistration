@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useMsal } from "@azure/msal-react";
+import { getUserFromToken, getAuthHeaders, isTokenExpired } from "../../src/utils/auth";
 import "./home.css";
 
 export default function Home() {
@@ -16,7 +17,8 @@ export default function Home() {
   const [importing, setImporting] = useState(false);
   const { instance } = useMsal();
 
-  const accountId = 1; // TODO: Get from session/context
+  const user = getUserFromToken();
+  const accountId = user ? user.id : null;
 
  useEffect(() => {
   syncMicrosoftUser();
@@ -26,7 +28,10 @@ export default function Home() {
 
   const fetchAccount = async () => {
     try {
-      const res = await fetch("http://localhost:3000/account/profile", { credentials: "include" });
+      const res = await fetch("http://localhost:3000/account/profile", {
+        headers: getAuthHeaders(),
+        credentials: "include"
+      });
       if (res.ok) {
         const data = await res.json();
         setAccount(data);
@@ -43,8 +48,9 @@ export default function Home() {
 
     if (!msalAccount) return;
 
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) return;
+    // Check if we already have a token (from main.jsx login)
+    const existingToken = getToken();
+    if (existingToken) return;
 
     const fullName = msalAccount.name || "";
     const nameParts = fullName.trim().split(" ");
@@ -70,9 +76,12 @@ export default function Home() {
       throw new Error(data.message || "Microsoft register failed");
     }
 
-    localStorage.setItem("user", JSON.stringify(data.account));
+    // Only store the token, not user data in localStorage
+    if (data.access_token) {
+      setToken(data.access_token);
+    }
     setAccount(data.account);
-    console.log("Microsoft user saved to localStorage:", data.account);
+    console.log("Microsoft user synced with token:", data.account);
   } catch (error) {
     console.error("Error syncing Microsoft user:", error);
   }
@@ -80,9 +89,13 @@ export default function Home() {
   
 
   const fetchEvents = async () => {
+    if (!accountId) return;
+
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/event?account_id=${accountId}`);
+      const res = await fetch(`http://localhost:3000/event?account_id=${accountId}`, {
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       setEvents(data || []);
     } catch (error) {

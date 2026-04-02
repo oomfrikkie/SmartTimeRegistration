@@ -5,6 +5,7 @@ import { MdOutlineMail } from "react-icons/md";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { FaArrowRight } from "react-icons/fa";
 import { CiLogout } from "react-icons/ci";
+import { getUserFromToken, getAuthHeaders, logout } from '../../src/utils/auth';
 import './accountoverview.css';
 
 export default function AccountOverview() {
@@ -14,24 +15,30 @@ export default function AccountOverview() {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
+    const handleLogout = async () => {
+        await logout();
+    };
+
     useEffect(() => {
         initializeData();
     }, []);
 
     const getUserData = () => {
-        const userData = localStorage.getItem('user');
+        const userData = getUserFromToken();
 
         if (userData) {
             setAccountID(userData.id);
-            return JSON.parse(userData);
+            return userData;
         } else {
-            throw new Error("User not found in local storage.");
+            throw new Error("User not found in token.");
         }   
     };
 
     const fetchProjects = async (accountID) => {
         try {
-            const response = await fetch(`http://localhost:3000/projects/by-account?account_id=${accountID}`);
+            const response = await fetch(`http://localhost:3000/projects/by-account?account_id=${accountID}`, {
+                headers: getAuthHeaders()
+            });
             const data = await response.json();
 
             const projectList = (data || []).map((project) => ({
@@ -97,7 +104,7 @@ export default function AccountOverview() {
                     </button>
 
                     <button className="log-out" 
-                    // onClick={() +> }
+                    onClick={handleLogout}
                     >
                         <CiLogout className="button-icon" />
                         <div className="desc">Log out</div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getUserFromToken, getAuthHeaders } from "../../src/utils/auth";
 import "./projects.css";
 
 export default function Projects() {
@@ -16,22 +17,18 @@ export default function Projects() {
     setLoading(true);
 
     try {
-      const storedUser = localStorage.getItem("user");
+      const user = getUserFromToken();
 
-      if (!storedUser) {
-        throw new Error("No user found in localStorage");
-      }
-
-      const user = JSON.parse(storedUser);
-
-      if (!user?.id) {
-        throw new Error("User ID not found in localStorage");
+      if (!user) {
+        throw new Error("No user found in token");
       }
 
       const accountId = user.id;
       setUserID(accountId);
 
-    const res = await fetch(`http://localhost:3000/projects/by-account?account_id=${accountId}`);
+    const res = await fetch(`http://localhost:3000/projects/by-account?account_id=${accountId}`, {
+      headers: getAuthHeaders()
+    });
 
       if (!res.ok) {
         throw new Error("Failed to fetch projects");

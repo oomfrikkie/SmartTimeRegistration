@@ -1,7 +1,11 @@
 import { NavLink } from "react-router-dom";
+import { logout } from "../../src/utils/auth";
 import "./sidebar.css";
 
 export default function Sidebar() {
+  const handleLogout = async () => {
+    await logout();
+  };
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -53,7 +57,7 @@ export default function Sidebar() {
           <span>Settings</span>
         </NavLink>
 
-        <button className="logout-btn">
+        <button className="logout-btn" onClick={handleLogout}>
           <span>Logout</span>
         </button>
       </div>

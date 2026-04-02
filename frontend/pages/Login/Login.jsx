@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useMsal } from "@azure/msal-react";
+import { setToken } from "../../src/utils/auth";
 import "./login.css";
 
 function Login() {
@@ -63,8 +64,8 @@ function Login() {
 
       console.log("Login successful:", data);
 
-      if (data.account) {
-        localStorage.setItem("user", JSON.stringify(data.account));
+      if (data.access_token) {
+        setToken(data.access_token);
       }
 
       navigate("/home");
