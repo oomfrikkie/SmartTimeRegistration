@@ -17,6 +17,7 @@ import { MicrosoftRegisterDto } from './dto-account/microsoft-register.dto';
 import { Request } from 'express';
 import 'express-session';
 import { MailerService } from './mailer.service';
+import { AuthService } from '../auth/auth.service';
 
 
 @Injectable()
@@ -26,12 +27,13 @@ export class AccountService {
     private readonly accountRepo: Repository<Account>,
     private readonly mailerService: MailerService,
     private readonly accountTokenService: AccountTokenService,
+    private readonly authService: AuthService,
   ) {}
 
   async microsoftRegister(
     dto: MicrosoftRegisterDto,
     req: Request,
-  ): Promise<{ message: string; account: AccountDto; created: boolean }> {
+  ): Promise<{ message: string; account: AccountDto; created: boolean; access_token: string }> {
     if (!dto || !dto.email) {
       throw new BadRequestException('Email is required');
     }
@@ -57,6 +59,8 @@ export class AccountService {
         req.session.loggedIn = true;
       }
 
+      const token = await this.authService.generateJwt(existing);
+
       return {
         message: 'Microsoft account already exists. Logged in successfully.',
         account: Object.assign(new AccountDto(), {
@@ -66,6 +70,7 @@ export class AccountService {
           surname: existing.surname,
         }),
         created: false,
+        access_token: token.access_token,
       };
     }
 
@@ -89,6 +94,8 @@ export class AccountService {
       req.session.loggedIn = true;
     }
 
+    const token = await this.authService.generateJwt(saved);
+
     return {
       message: 'Microsoft account created and logged in successfully.',
       account: Object.assign(new AccountDto(), {
@@ -98,6 +105,7 @@ export class AccountService {
         surname: saved.surname,
       }),
       created: true,
+      access_token: token.access_token,
     };
   }
   // Account creation
@@ -152,7 +160,7 @@ export class AccountService {
   async login(
     dto: LoginDto,
     req: Request,
-  ): Promise<{ message: string; account: Partial<Account> }> {
+  ): Promise<{ message: string; account: Partial<Account>; access_token: string }> {
     if (!dto || !dto.email || !dto.password) {
       throw new UnauthorizedException('Email and password are required');
     }
@@ -185,12 +193,16 @@ export class AccountService {
       req.session.loggedIn = true;
     }
 
+    // Generate JWT token
+    const token = await this.authService.generateJwt(account);
+
     // Removing the password from the account object
     const { password, ...accountWithoutPassword } = account;
 
     return {
       message: 'Login successful',
       account: accountWithoutPassword,
+      access_token: token.access_token,
     };
   }
 

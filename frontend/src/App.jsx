@@ -41,6 +41,7 @@ function App() {
         <Route path="/projects/create" element={<CreateProject />} />
         <Route path="/projects/:projectId/:name" element={<ProjectDetail />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/account" element={<AccountOverview />} />
       </Routes>
     </section>
     </ErrorBoundary>

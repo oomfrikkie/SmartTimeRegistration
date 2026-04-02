@@ -60,7 +60,7 @@ export class AccountController {
   @ApiProduces('application/xml', 'application/json')
   @ApiConsumes('application/xml', 'application/json')
   @ApiBody({ type: LoginDto, description: 'Login', required: true })
-  @ApiOkResponse({ type: LoginDto })
+  @ApiOkResponse({ description: 'Login successful' })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(

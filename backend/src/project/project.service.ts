@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -7,6 +7,8 @@ import { ProjectMember } from 'src/projectmember/projectmember.entity';
 import { Account } from '../account/account.entity';
 import { CreateProjectDto } from './dto-project/create-project.dto';
 import { ProjectMemberRole } from 'src/projectmember/enum/projectmember.enum';
+import { AddUserDto } from './dto-project/add-user.dto';
+
 
 @Injectable()
 export class ProjectService {
@@ -98,5 +100,78 @@ async getProjectMembers(project_id: number): Promise<ProjectMember[]> {
     },
     relations: ['account', 'project'],
   });
+}
+
+async getMyRoleInProject(project_id: number, account_id: number){
+  const role = await this.projectMemberRepo.findOne({
+    where: {
+      project: {id: project_id},
+      account: {id: account_id}
+    },
+    relations: ['project', 'account'],
+  });
+
+  if(!role){
+    throw new NotFoundException("User cannot be found in the current project");
+  }
+
+  return{
+    role: role.roles,
+    isAdmin: role.roles.toLowerCase() === 'admin',
+  }
+}
+
+async addUserToProject(dto: AddUserDto) {
+  const project = await this.projectRepo.findOne({
+    where: { id: dto.project_id },
+  });
+
+  if (!project) {
+    throw new NotFoundException('Project cannot be found');
+  }
+
+  const account = await this.accountRepo.findOne({
+    where: { id: dto.account_id },
+  });
+
+  if (!account) {
+    throw new NotFoundException('Account cannot be found');
+  }
+
+  const existingUser = await this.projectMemberRepo.findOne({
+    where: {
+      project: { id: dto.project_id },
+      account: { id: dto.account_id },
+    },
+    relations: ['project', 'account'],
+  });
+
+  if (existingUser) {
+    throw new BadRequestException('User already exists in this project');
+  }
+
+  const projectMember = this.projectMemberRepo.create({
+    project,
+    account,
+    roles: ProjectMemberRole.EMPLOYEE,
+  });
+
+  const savedProjectMember = await this.projectMemberRepo.save(projectMember);
+
+  return {
+    project_id: project.id,
+    account_id: account.id,
+    roles: savedProjectMember.roles,
+    project: {
+      id: project.id,
+      name: project.name,
+    },
+    account: {
+      id: account.id,
+      name: account.name,
+      surname: account.surname,
+      email: account.email,
+    },
+  };
 }
 }

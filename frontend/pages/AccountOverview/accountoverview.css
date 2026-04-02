@@ -64,9 +64,15 @@ body {
     grid: 2 / 3;
 }
 
-button {
+.personal-information .buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.personal-information .buttons > * {
     margin-top: 1rem;
-    width: 15%;
     height: 2.5rem;
     border-radius: 0.5rem;
     border: none;
@@ -75,25 +81,30 @@ button {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
-    align-items: center; /*Centers items vertically*/
+    align-items: center;
     margin-bottom: 1rem;
 }
 
-.lock-icon, button .desc {
-    color: var(--color-white);
+.personal-information .reset-password {
+    width: 15%;
 }
 
-.lock-icon {
+.personal-information .log-out {
+    width: 10%;
+}
+
+.button-icon, button .desc {
+    color: var(--color-white);
+    stroke-width: 2%;
+}
+
+.button-icon {
     font-size: 1.5rem;
 }
 
 
 /* CURRENT PROJECTS SECTION */
-.current-projects .project, .previous-projects .project {
-    margin-bottom: 1rem;
-}
-
-.current-projects > .project {
+.projects-list > .project {
     border: solid var(--color-secondary) 2px;
     border-radius: 0.5rem;
     display: flex;
@@ -103,20 +114,27 @@ button {
     padding: 1rem 1rem;
 }
 
-.current-projects > {
+.current-projects > .projects-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.current-projects .title, .previous-projects .title {
+.projects-list .title, .previous-projects .title {
     font-weight: 500;
     font-size: larger;
+    margin-top: 0.5rem;
     margin-bottom: 0.5rem;
 }
 
-.current-projects a, .current-projects a:active, .current-projects a:visited {
+.projects-list {
+    margin-bottom: 2rem;
+}
+
+.view-project-button * {
+    background-color: var(--color-white);
     color: var(--color-red);
+    font-weight: bold;
 }
 
 .arrow-icon {
@@ -136,8 +154,6 @@ button {
     padding: 1rem 1rem;
 }
 
-.previous-projects > .info {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+.previous-projects .project {
+    margin-bottom: 1rem;
 }

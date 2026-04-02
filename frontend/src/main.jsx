@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { PublicClientApplication, EventType } from '@azure/msal-browser'
 import { MsalProvider } from '@azure/msal-react'
+import { setToken } from './utils/auth'
 import './index.css'
 import App from './App.jsx'
 
@@ -83,6 +84,9 @@ root.render(
             console.error('[Signup] Microsoft backend registration failed:', backendData)
           } else {
             console.log('[Signup] Microsoft account persisted in backend:', backendData)
+            if (backendData.access_token) {
+              setToken(backendData.access_token)
+            }
           }
         } catch (error) {
           console.error('[Signup] Microsoft backend registration request failed:', error)
