@@ -24,10 +24,10 @@ export class CreateProjectDto {
   status?: ProjectStatus;
 
   @ApiProperty({ 
-    example: '01-01-2026', 
+    example: '2026-01-01', 
     required: false,
     type: String,
-    description: 'Start date of the project (DD-MM-YYYY)'
+    description: 'Start date of the project (YYYY-MM-DD)'
   })
   @IsDate()
   @IsOptional()
@@ -35,19 +35,13 @@ export class CreateProjectDto {
   startDate?: Date;
 
   @ApiProperty({ 
-    example: '12-12-2026', 
+    example: '2026-08-24', 
     required: false,
     type: String,
-    description: 'End date of the project (DD-MM-YYYY)'
+    description: 'End date of the project (YYYY-MM-DD)'
   })
   @IsDate()
   @IsOptional()
   @Type(() => Date)
-  @ValidateIf((o) => o.startDate && o.endDate)
-  validateEndDate?(o: CreateProjectDto) {
-    if (o.endDate && o.startDate && o.endDate < o.startDate) {
-      throw new Error('End date cannot be before start date');
-    }
-  }
   endDate?: Date;
 }

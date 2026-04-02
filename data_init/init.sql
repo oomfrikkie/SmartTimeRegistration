@@ -44,12 +44,15 @@ CREATE TABLE event (
 -- Project table
 CREATE TABLE project (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    status VARCHAR(20) default 'ongoing' NOT NULL,
+    start_date DATE,
+    end_date DATE
 );
 
 -- Example project
-INSERT INTO project (name)
-VALUES ('Smart Time Registration');
+INSERT INTO project (name, status, start_date, end_date)
+VALUES ('Smart Time Registration', 'ongoing', '2026-02-13', '2026-08-08');
 
 -- Enum type for project member roles
 DO $$

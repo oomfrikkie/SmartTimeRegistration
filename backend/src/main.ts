@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 const session = require('express-session');
 
 async function bootstrap() {
@@ -32,6 +33,17 @@ async function bootstrap() {
     origin: ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:3000'], // Frontend app URLs
     credentials: true, // Allow cookies to be sent
   });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,           // Strip non-whitelisted properties
+      transform: true,           // Automatically transform payloads to DTO objects
+      forbidNonWhitelisted: true, // Throw error if non-whitelisted props are sent
+      transformOptions: {
+        enableImplicitConversion: true, // Convert strings to numbers/dates automatically
+      },
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }
