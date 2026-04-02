@@ -3,21 +3,53 @@ import "./notification.css";
 import { CgBell } from "react-icons/cg";
 
 export default function Notification() {
+    const [invitations, setInvitations] = useState([]);
     // Check if dropdown is visible
     const [open, setOpen] = useState(false);
+    const ref = useRef(null);
 
-    // Hardcoded for now, will get from API later
-    const notifications = [];
-    const unreadCount = 0;
+    const fetchInvitations = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/invitation/pending", {
+                credentials: "include",
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setInvitations(data);
+            }
+        } catch (error) {
+            console.error("Error fetching invitations:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchInvitations();
+    }, []);
+
+    const handleAccept = async (id) => {
+        await fetch(`http://localhost:3000/invitation/${id}/accept`, {
+            method: "PATCH",
+            credentials: "include",
+        });
+        setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+    };
+
+    const handleDecline = async (id) => {
+        await fetch(`http://localhost:3000/invitation/${id}/decline`, {
+            method: "PATCH",
+            credentials: "include",
+        });
+        setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+    };
 
     return (
         // CgBell toggles the dropdown when clicked. The red badge only show when unreadCount > 0
-        <div className="notification-bell">
+        <div className="notification-bell" ref={ref}>
             <button className="bell-btn" onClick={() =>
                 setOpen(!open)}>
                 <CgBell />
-                {unreadCount > 0 && (
-                    <span className="bell-badge">{unreadCount}</span>
+                {invitations.length > 0 && (
+                    <span className="bell-badge">{invitations.length}</span>
                 )}
             </button>
 
@@ -28,16 +60,22 @@ export default function Notification() {
                         <h4>Notifications</h4>
                     </div>
                     <div className="notification-list">
-                        {notifications.length === 0 ? (
-                            <p className="notification-empty">No
-                                notifications</p>
+                        {invitations.length === 0 ? (
+                            <p className="notification-empty">No notifications</p>
                         ) : (
-                            notifications.map((n) => (
-                                <div key={n.id} className={`notification-item ${!n.isRead ? "unread" : ""}`}>
+                            invitations.map((inv) => (
+                                <div key={inv.id} className= "notification-item unread">
                                     <p
-                                        className="notification-message">{n.message}</p>
-                                    <span
-                                        className="notification-time">{n.createdAt}</span>
+                                        className="notification-message">
+                                            <strong>{inv.inviter.name}</strong> invited you to <strong>{inv.project.name}</strong>
+                                    </p>
+                                    <div className="notification-actions">
+                                        <button onClick={() => handleAccept(inv.id)}>Accept</button>
+                                        <button onClick={() => handleDecline(inv.id)}>Decline</button>
+                                    </div>
+                                    <span className="notification-time">
+                                        {new Date(inv.created_at).toLocaleDateString()}
+                                    </span>
                                 </div>
                             ))
                         )}
