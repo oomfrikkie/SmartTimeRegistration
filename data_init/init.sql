@@ -83,7 +83,7 @@ CREATE TABLE invitations (
     inviter_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     invitee_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    status invitation_status NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP DEFAULT NOW()
 );
 
