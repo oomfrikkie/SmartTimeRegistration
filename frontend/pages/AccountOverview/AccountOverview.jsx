@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GoPerson } from 'react-icons/go';
 import { MdOutlineMail } from "react-icons/md";
 import { IoLockClosedOutline } from "react-icons/io5";
@@ -10,6 +11,7 @@ export default function AccountOverview() {
     const [accountID, setAccountID] = useState(0);
     const [projects, setProjects] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         initializeData();
@@ -87,7 +89,7 @@ export default function AccountOverview() {
                     </div>
                 </div>
 
-                <button>
+                <button onClick={() => navigate('/reset-password')}>
                     <IoLockClosedOutline className="lock-icon" />
                     <div className="desc">Change Password</div>
                 </button>
