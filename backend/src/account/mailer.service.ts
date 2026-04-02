@@ -36,4 +36,22 @@ export class MailerService {
         `,
     });
   }
+
+  async sendInvitationEmail(
+    toEmail: string,
+    inviteeName: string,
+    inviterName: string,
+    projectName: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: process.env.MAIL_FROM,
+      to: toEmail,
+      subject: `You've been invited to join ${projectName}`,
+      html: `
+      <p>Hi ${inviteeName},</p>
+      <p><strong>${inviterName}</strong> has invited you to join the project <strong>${projectName}</strong>.</p>
+      <p>Log in to your account to accept or decline the invitation.</p>
+      `,
+    });
+  }
 }
