@@ -51,38 +51,35 @@ function CreateProject() {
     if (!projectName || selectedMembers.length === 0) return;
 
     try {
-        const today = new Date().toISOString().split("T")[0];
+      // 1. Create the project
+      const projectRes = await fetch("http://localhost:3000/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: projectName }),
+      });
 
-        for (const member of selectedMembers) {
-        await fetch("http://localhost:3000/event", {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-            name: "Project Initialization", // required
-            project_name: projectName,
-            account_id: member.id,
+      if (!projectRes.ok) {
+        console.error("Failed to create project");
+        return;
+      }
 
-            // required fields 
-            date: today,
-            start_time: "00:00:00",
-            end_time: "00:00:00",
-            total_hours: 0,
+      const project = await projectRes.json();
 
-            // optional (safe defaults)
-            package_name: null,
-            location: null,
-            description: "Project created",
-            is_online: false,
-            is_series: false,
-            attendees: [],
-            }),
-        });
-        }
+      // 2. Send invitations to selected members
+      await fetch("http://localhost:3000/invitation/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          projectId: project.id,
+          inviteeIds: selectedMembers.map((m) => m.id),
+        }),
+      });
 
-        navigate("/projects");
-
+      navigate("/projects");
     } catch (err) {
-        console.error("Error creating project:", err);
+      console.error("Error creating project:", err);
     }
   };
 

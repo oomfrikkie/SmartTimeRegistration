@@ -68,13 +68,23 @@ CREATE TABLE project_member (
     PRIMARY KEY (project_id, account_id)
 );
 
+-- Enum type for invitation status
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'invitation_status') THEN
+        CREATE TYPE invitation_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED');
+    END IF;
+END$$;
+
+
 -- Invitations table
 CREATE TABLE invitations (
     id SERIAL PRIMARY KEY,
     inviter_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     invitee_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-    status VARCHAR(50) NOT NULL
+    status invitation_status NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Add John Doe as ADMIN to the first project
