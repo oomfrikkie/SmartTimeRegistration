@@ -4,6 +4,7 @@ import { GoPerson } from 'react-icons/go';
 import { MdOutlineMail } from "react-icons/md";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { FaArrowRight } from "react-icons/fa";
+import { CiLogout } from "react-icons/ci";
 import './accountoverview.css';
 
 export default function AccountOverview() {
@@ -89,10 +90,19 @@ export default function AccountOverview() {
                     </div>
                 </div>
 
-                <button onClick={() => navigate('/reset-password')}>
-                    <IoLockClosedOutline className="lock-icon" />
-                    <div className="desc">Change Password</div>
-                </button>
+                <div className="buttons">
+                    <button className="reset-password" onClick={() => navigate('/reset-password')}>
+                        <IoLockClosedOutline className="button-icon" />
+                        <div className="desc">Change Password</div>
+                    </button>
+
+                    <button className="log-out" 
+                    // onClick={() +> }
+                    >
+                        <CiLogout className="button-icon" />
+                        <div className="desc">Log out</div>
+                    </button>
+                </div>
             </section>
 
             <section className="current-projects">
