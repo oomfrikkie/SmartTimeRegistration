@@ -9,6 +9,8 @@ import { CreateProjectDto } from './dto-project/create-project.dto';
 import { ProjectMemberRole } from 'src/projectmember/enum/projectmember.enum';
 import { AddUserDto } from './dto-project/add-user.dto';
 
+import { ProjectStatus } from './project.entity';
+
 
 @Injectable()
 export class ProjectService {
@@ -36,7 +38,19 @@ export class ProjectService {
     // 2. create project
     const project = this.projectRepo.create({
       name: dto.name,
+      status: dto.status || ProjectStatus.ONGOING
     });
+
+    if (dto.startDate) {
+      project.startDate = new Date(dto.startDate);
+    }
+    if (dto.endDate) {
+      project.endDate = new Date(dto.endDate);
+    }
+
+    if (project.startDate && project.endDate && project.startDate > project.endDate) {
+      throw new BadRequestException('End date cannot be before start date');
+    }
 
     const savedProject = await this.projectRepo.save(project);
 
@@ -102,7 +116,7 @@ async getProjectMembers(project_id: number): Promise<ProjectMember[]> {
   });
 }
 
-async getMyRoleInProject(project_id: number, account_id: number){
+async getMyRoleInProject(project_id: number, account_id: number) {
   const role = await this.projectMemberRepo.findOne({
     where: {
       project: {id: project_id},

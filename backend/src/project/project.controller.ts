@@ -17,29 +17,27 @@ export class ProjectController {
     return this.projectService.addUserToProject(dto);
   }
 
- @Get()
-async getAllProjects() {
-  return this.projectService.getAllProjects();
-}
+  @Get()
+  async getAllProjects() {
+    return this.projectService.getAllProjects();
+  }
 
-@Get('by-account')
-getProjectsByAccount(@Query('account_id') account_id: string) {
-  return this.projectService.getProjectsByAccountID(Number(account_id));
-}
+  @Get('by-account')
+  getProjectsByAccount(@Query('account_id') account_id: string) {
+    return this.projectService.getProjectsByAccountID(Number(account_id));
+  }
 
-@Get('members')
-getProjectMembers(@Query('project_id') project_id: string) {
-  return this.projectService.getProjectMembers(Number(project_id));
-}
+  @Get('members')
+  getProjectMembers(@Query('project_id') project_id: string) {
+    return this.projectService.getProjectMembers(Number(project_id));
+  }
 
-@Get(':project_id/my-role')
-getMyRoleInProject(@Param('project_id') project_id: string,
-@Query('account_id') account_id: string,){
-  return this.projectService.getMyRoleInProject(
-    Number(project_id),
-    Number(account_id),
-  );
-}
-
-
+  @Get(':project_id/my-role')
+  getMyRoleInProject(@Param('project_id') project_id: string,
+  @Query('account_id') account_id: string,) {
+    return this.projectService.getMyRoleInProject(
+      Number(project_id),
+      Number(account_id),
+    );
+  }
 }
