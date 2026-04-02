@@ -306,4 +306,10 @@ export class AccountService {
 
     return { message: 'Password changed successfully' };
   }
+
+  async findAll() {
+  return this.accountRepo.find({
+    select: ['id', 'name', 'surname', 'email'],
+  });
+}
 }
