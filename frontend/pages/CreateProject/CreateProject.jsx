@@ -1,3 +1,4 @@
+import { getUserFromToken } from "../../src/utils/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../../src/utils/auth";
@@ -51,12 +52,15 @@ function CreateProject() {
     if (!projectName || selectedMembers.length === 0) return;
 
     try {
+      const user = getUserFromToken();
+      if (!user) return;
+
       // 1. Create the project
       const projectRes = await fetch("http://localhost:3000/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name: projectName }),
+        body: JSON.stringify({ name: projectName, account_id: user.id }),
       });
 
       if (!projectRes.ok) {
@@ -65,14 +69,18 @@ function CreateProject() {
       }
 
       const project = await projectRes.json();
+      console.log("project response:", project);
+      console.log("project id:", project.id);
+      console.log("inviteeIds:", selectedMembers.map((m) => m.id));
+
 
       // 2. Send invitations to selected members
       await fetch("http://localhost:3000/invitation/send", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify({
-          projectId: project.id,
+          projectId: project.project.id,
           inviteeIds: selectedMembers.map((m) => m.id),
         }),
       });
