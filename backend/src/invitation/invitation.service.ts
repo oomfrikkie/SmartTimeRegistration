@@ -17,6 +17,7 @@ export class InvitationService {
     ) {}
 
     async sendInvitations(projectId: number, inviteeIds: number[], inviterId: number) {
+        console.log('sendInvitations called:', { projectId, inviteeIds, inviterId });
         const results: ProjectInvitation[] = [];
         
         for (const inviteeId of inviteeIds) {

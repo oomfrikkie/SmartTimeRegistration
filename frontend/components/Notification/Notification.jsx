@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./notification.css";
 import { CgBell } from "react-icons/cg";
+import { getAuthHeaders } from "../../src/utils/auth";
 
 export default function Notification() {
     const [invitations, setInvitations] = useState([]);
@@ -11,6 +12,7 @@ export default function Notification() {
     const fetchInvitations = async () => {
         try {
             const res = await fetch("http://localhost:3000/invitation/pending", {
+                headers: getAuthHeaders(),
                 credentials: "include",
             });
             if (res.ok) {
@@ -29,6 +31,7 @@ export default function Notification() {
     const handleAccept = async (id) => {
         await fetch(`http://localhost:3000/invitation/${id}/accept`, {
             method: "PATCH",
+            headers: getAuthHeaders(),
             credentials: "include",
         });
         setInvitations((prev) => prev.filter((inv) => inv.id !== id));
@@ -37,6 +40,7 @@ export default function Notification() {
     const handleDecline = async (id) => {
         await fetch(`http://localhost:3000/invitation/${id}/decline`, {
             method: "PATCH",
+            headers: getAuthHeaders(),
             credentials: "include",
         });
         setInvitations((prev) => prev.filter((inv) => inv.id !== id));
