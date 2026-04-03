@@ -3,7 +3,9 @@ import { SendInvitationDto } from "./dto-invitation/send-invitation.dto";
 import { InvitationService } from "./invitation.service";
 import type { Request } from 'express';
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller('invitation')
 @UseGuards(JwtAuthGuard)
 export class InvitationController {
