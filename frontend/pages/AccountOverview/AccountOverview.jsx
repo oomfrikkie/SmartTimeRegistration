@@ -151,7 +151,7 @@ export default function AccountOverview() {
             <section className="previous-projects">
                 <h2>Previous Projects</h2>
                 {previousProjects.length === 0 ? (
-                    <p>You have not taken yet taken part in any projects.</p>
+                    <p>You have not taken yet completed any projects.</p>
                 ) : (
                     <div className="previous-projects-list">
                         {previousProjects.map(project => (

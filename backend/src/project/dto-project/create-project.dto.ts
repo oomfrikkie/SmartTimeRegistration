@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString, IsEnum, IsOptional, IsDate, ValidateIf } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsEnum, IsOptional, IsDate, ValidateIf, IsNumber, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjectStatus } from '../project.entity';
 import { Type } from 'class-transformer';
@@ -22,6 +22,18 @@ export class CreateProjectDto {
   @IsEnum(ProjectStatus)
   @IsOptional()
   status?: ProjectStatus;
+
+  @ApiProperty({
+    example: 125,
+    description: "Total hours allocated to the project",
+    required: true,
+    default: 0,
+    minimum: 0
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  total_hours: number;
 
   @ApiProperty({ 
     example: '2026-01-01', 

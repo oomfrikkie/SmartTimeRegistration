@@ -21,6 +21,15 @@ export class Project {
   })
   status : ProjectStatus;
 
+  @Column({ 
+    type: 'decimal', 
+    precision: 6, 
+    scale: 2,
+    nullable: false,
+    default: 0
+  })
+  total_hours: number;
+
   @Column({ type: 'date', nullable: true })
   start_date: Date;
 
@@ -38,6 +47,14 @@ export class Project {
     if (this.status === ProjectStatus.COMPLETED && !this.end_date) {
       this.end_date = new Date();
     }
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  validateHours() {
+    if (this.total_hours < 0) {
+      throw new Error('Total hours cannot be negative');
+    } 
   }
 
   // Ensuring valid dates

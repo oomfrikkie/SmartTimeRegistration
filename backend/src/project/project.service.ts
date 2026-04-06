@@ -38,7 +38,8 @@ export class ProjectService {
     // 2. create project
     const project = this.projectRepo.create({
       name: dto.name,
-      status: dto.status || ProjectStatus.ONGOING
+      status: dto.status || ProjectStatus.ONGOING,
+      total_hours: dto.total_hours
     });
 
     if (dto.start_date) {
@@ -184,6 +185,7 @@ export class ProjectService {
         id: project.id,
         name: project.name,
         status: project.status,
+        total_hours: project.total_hours,
         start_date: project.start_date,
         end_date: project.end_date,
       },

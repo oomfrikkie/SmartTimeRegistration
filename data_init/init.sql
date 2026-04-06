@@ -46,13 +46,14 @@ CREATE TABLE project (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     status VARCHAR(20) default 'ongoing' NOT NULL,
+    total_hours DECIMAL(6, 2) DEFAULT 0 NOT NULL,
     start_date DATE,
     end_date DATE
 );
 
 -- Example project
-INSERT INTO project (name, status, start_date, end_date)
-VALUES ('Smart Time Registration', 'ongoing', '2026-02-13', '2026-08-08');
+INSERT INTO project (name, status, total_hours, start_date, end_date)
+VALUES ('Smart Time Registration', 'ongoing', 125, '2026-02-13', '2026-08-08');
 
 -- Enum type for project member roles
 DO $$
