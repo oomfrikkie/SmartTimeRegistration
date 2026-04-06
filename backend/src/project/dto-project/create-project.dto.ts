@@ -32,7 +32,7 @@ export class CreateProjectDto {
   @IsDate()
   @IsOptional()
   @Type(() => Date)
-  startDate?: Date;
+  start_date?: Date;
 
   @ApiProperty({ 
     example: '2026-08-24', 
@@ -43,5 +43,5 @@ export class CreateProjectDto {
   @IsDate()
   @IsOptional()
   @Type(() => Date)
-  endDate?: Date;
+  end_date?: Date;
 }

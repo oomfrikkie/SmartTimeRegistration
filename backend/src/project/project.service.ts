@@ -41,11 +41,11 @@ export class ProjectService {
       status: dto.status || ProjectStatus.ONGOING
     });
 
-    if (dto.startDate) {
-      project.startDate = new Date(dto.startDate);
+    if (dto.start_date) {
+      project.startDate = new Date(dto.start_date);
     }
-    if (dto.endDate) {
-      project.endDate = new Date(dto.endDate);
+    if (dto.end_date) {
+      project.endDate = new Date(dto.end_date);
     }
 
     if (project.startDate && project.endDate && project.startDate > project.endDate) {
@@ -71,121 +71,124 @@ export class ProjectService {
   }
 
   async getAllProjects() {
-  return this.projectRepo.find({
-    relations: ['members', 'members.account'],
-  });
-}
-
-async getProjectsByAccountID(account_id: number): Promise<Project[]> {
-  const account = await this.accountRepo.findOne({
-    where: { id: account_id },
-  });
-
-  if (!account) {
-    throw new NotFoundException(`Account with id ${account_id} not found`);
+    return this.projectRepo.find({
+      relations: ['members', 'members.account'],
+    });
   }
 
-  return this.projectRepo.find({
-    where: {
-      members: {
-        account: {
-          id: account_id,
+  async getProjectsByAccountID(account_id: number): Promise<Project[]> {
+    const account = await this.accountRepo.findOne({
+      where: { id: account_id },
+    });
+
+    if (!account) {
+      throw new NotFoundException(`Account with id ${account_id} not found`);
+    }
+
+    return this.projectRepo.find({
+      where: {
+        members: {
+          account: {
+            id: account_id,
+          },
         },
       },
-    },
-    relations: ['members', 'members.account'],
-  });
-}
-
-async getProjectMembers(project_id: number): Promise<ProjectMember[]> {
-  const project = await this.projectRepo.findOne({
-    where: { id: project_id },
-  });
-
-  if (!project) {
-    throw new NotFoundException(`Project with id ${project_id} not found`);
+      relations: ['members', 'members.account'],
+    });
   }
 
-  return this.projectMemberRepo.find({
-    where: {
-      project: {
-        id: project_id,
+  async getProjectMembers(project_id: number): Promise<ProjectMember[]> {
+    const project = await this.projectRepo.findOne({
+      where: { id: project_id },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with id ${project_id} not found`);
+    }
+
+    return this.projectMemberRepo.find({
+      where: {
+        project: {
+          id: project_id,
+        },
       },
-    },
-    relations: ['account', 'project'],
-  });
-}
-
-async getMyRoleInProject(project_id: number, account_id: number) {
-  const role = await this.projectMemberRepo.findOne({
-    where: {
-      project: {id: project_id},
-      account: {id: account_id}
-    },
-    relations: ['project', 'account'],
-  });
-
-  if(!role){
-    throw new NotFoundException("User cannot be found in the current project");
+      relations: ['account', 'project'],
+    });
   }
 
-  return{
-    role: role.roles,
-    isAdmin: role.roles.toLowerCase() === 'admin',
-  }
-}
+  async getMyRoleInProject(project_id: number, account_id: number) {
+    const role = await this.projectMemberRepo.findOne({
+      where: {
+        project: {id: project_id},
+        account: {id: account_id}
+      },
+      relations: ['project', 'account'],
+    });
 
-async addUserToProject(dto: AddUserDto) {
-  const project = await this.projectRepo.findOne({
-    where: { id: dto.project_id },
-  });
+    if(!role){
+      throw new NotFoundException("User cannot be found in the current project");
+    }
 
-  if (!project) {
-    throw new NotFoundException('Project cannot be found');
-  }
-
-  const account = await this.accountRepo.findOne({
-    where: { id: dto.account_id },
-  });
-
-  if (!account) {
-    throw new NotFoundException('Account cannot be found');
+    return {
+      role: role.roles,
+      isAdmin: role.roles.toLowerCase() === 'admin',
+    }
   }
 
-  const existingUser = await this.projectMemberRepo.findOne({
-    where: {
-      project: { id: dto.project_id },
-      account: { id: dto.account_id },
-    },
-    relations: ['project', 'account'],
-  });
+  async addUserToProject(dto: AddUserDto) {
+    const project = await this.projectRepo.findOne({
+      where: { id: dto.project_id },
+    });
 
-  if (existingUser) {
-    throw new BadRequestException('User already exists in this project');
+    if (!project) {
+      throw new NotFoundException('Project cannot be found');
+    }
+
+    const account = await this.accountRepo.findOne({
+      where: { id: dto.account_id },
+    });
+
+    if (!account) {
+      throw new NotFoundException('Account cannot be found');
+    }
+
+    const existingUser = await this.projectMemberRepo.findOne({
+      where: {
+        project: { id: dto.project_id },
+        account: { id: dto.account_id },
+      },
+      relations: ['project', 'account'],
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('User already exists in this project');
+    }
+
+    const projectMember = this.projectMemberRepo.create({
+      project,
+      account,
+      roles: ProjectMemberRole.EMPLOYEE,
+    });
+
+    const savedProjectMember = await this.projectMemberRepo.save(projectMember);
+
+    return {
+      project_id: project.id,
+      account_id: account.id,
+      roles: savedProjectMember.roles,
+      project: {
+        id: project.id,
+        name: project.name,
+        status: project.status,
+        start_date: project.start_date,
+        end_date: project.end_date,
+      },
+      account: {
+        id: account.id,
+        name: account.name,
+        surname: account.surname,
+        email: account.email,
+      },
+    };
   }
-
-  const projectMember = this.projectMemberRepo.create({
-    project,
-    account,
-    roles: ProjectMemberRole.EMPLOYEE,
-  });
-
-  const savedProjectMember = await this.projectMemberRepo.save(projectMember);
-
-  return {
-    project_id: project.id,
-    account_id: account.id,
-    roles: savedProjectMember.roles,
-    project: {
-      id: project.id,
-      name: project.name,
-    },
-    account: {
-      id: account.id,
-      name: account.name,
-      surname: account.surname,
-      email: account.email,
-    },
-  };
-}
 }
