@@ -8,6 +8,7 @@ import { EventModule } from './event/event.module';
 import { AccountModule } from './account/account.module';
 import { ProjectModule } from './project/project.module';
 import { AccountTokenModule } from './account/token/account-token.module';
+import { InvitationModule } from './invitation/invitation.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { AuthModule } from './auth/auth.module';
     AccountModule,
     ProjectModule,
     AccountTokenModule,
+    InvitationModule,
     AuthModule,
   ],
   controllers: [AppController],

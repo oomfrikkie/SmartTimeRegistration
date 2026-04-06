@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { Project } from './project.entity';
 import { ProjectMember } from 'src/projectmember/projectmember.entity';
@@ -85,17 +85,21 @@ export class ProjectService {
       throw new NotFoundException(`Account with id ${account_id} not found`);
     }
 
-    return this.projectRepo.find({
-      where: {
-        members: {
-          account: {
-            id: account_id,
-          },
-        },
-      },
-      relations: ['members', 'members.account'],
-    });
-  }
+  // Step 1: find project IDs where account is a member
+  const memberRecords = await this.projectMemberRepo.find({
+    where: { account_id: account_id },
+  });
+
+  const projectIds = memberRecords.map(m => m.project_id);
+
+  if (projectIds.length === 0) return [];
+
+  // Step 2: fetch those projects with ALL members loaded
+  return this.projectRepo.find({
+    where: { id: In(projectIds) },
+    relations: ['members', 'members.account'],
+  });
+}
 
   async getProjectMembers(project_id: number): Promise<ProjectMember[]> {
     const project = await this.projectRepo.findOne({

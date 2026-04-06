@@ -7,6 +7,7 @@ const session = require('express-session');
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.useGlobalPipes(new ValidationPipe());
   app.use(
     session({
       secret: process.env.SESSION_SECRET || "kJ9#mP2$vL5@nQ8&rT3*wX6%zY1^cB4",
@@ -24,6 +25,7 @@ async function bootstrap() {
     .setTitle('Smart Time Registration API')
     .setDescription('API documentation')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -173,4 +173,10 @@ export class AccountController {
       dto.newPassword,
     );
   }
+
+  // Add new endpoint to get all users
+  @Get('all')
+  async getAllAccounts() {
+    return this.accountService.findAll();
+  }
 }

@@ -1,3 +1,4 @@
+import { getUserFromToken } from "../../src/utils/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../../src/utils/auth";
@@ -51,38 +52,42 @@ function CreateProject() {
     if (!projectName || selectedMembers.length === 0) return;
 
     try {
-        const today = new Date().toISOString().split("T")[0];
+      const user = getUserFromToken();
+      if (!user) return;
 
-        for (const member of selectedMembers) {
-        await fetch("http://localhost:3000/event", {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-            name: "Project Initialization", // required
-            project_name: projectName,
-            account_id: member.id,
+      // 1. Create the project
+      const projectRes = await fetch("http://localhost:3000/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: projectName, account_id: user.id }),
+      });
 
-            // required fields 
-            date: today,
-            start_time: "00:00:00",
-            end_time: "00:00:00",
-            total_hours: 0,
+      if (!projectRes.ok) {
+        console.error("Failed to create project");
+        return;
+      }
 
-            // optional (safe defaults)
-            package_name: null,
-            location: null,
-            description: "Project created",
-            is_online: false,
-            is_series: false,
-            attendees: [],
-            }),
-        });
-        }
+      const project = await projectRes.json();
+      console.log("project response:", project);
+      console.log("project id:", project.id);
+      console.log("inviteeIds:", selectedMembers.map((m) => m.id));
 
-        navigate("/projects");
 
+      // 2. Send invitations to selected members
+      await fetch("http://localhost:3000/invitation/send", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify({
+          projectId: project.project.id,
+          inviteeIds: selectedMembers.map((m) => m.id),
+        }),
+      });
+
+      navigate("/projects");
     } catch (err) {
-        console.error("Error creating project:", err);
+      console.error("Error creating project:", err);
     }
   };
 
