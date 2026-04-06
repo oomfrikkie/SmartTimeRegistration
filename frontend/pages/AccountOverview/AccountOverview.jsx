@@ -51,11 +51,12 @@ export default function AccountOverview() {
             setCurrentProjects(currentProjectList);
 
             const previousProjectsList = (data || [])
-                .filter(project => project.status = "completed")
+                .filter(project => project.status == "completed")
                 .map((project) => ({
                     id: project.id,
                     name: project.name || "Unnamed Project",
                 }));
+            setPreviousProjects(previousProjectsList);
         } catch (error) {
             console.error('Error fetching projects:', error);
         }
@@ -149,15 +150,26 @@ export default function AccountOverview() {
 
             <section className="previous-projects">
                 <h2>Previous Projects</h2>
-                <div className="project">  {/*Must be rendered dynamically. Use the API for the projects to retrieve info*/}
-                    <div className="title">API Integration</div>
-                    <div className="status">Completed</div>
-                </div>
-
-                <div className="project"> {/*Must be rendered dynamically. Use the API for the projects to retrieve info*/}
-                    <div className="title">Database Migration</div>
-                    <div className="status">Completed</div>
-                </div>
+                {previousProjects.length === 0 ? (
+                    <p>You have not taken yet taken part in any projects.</p>
+                ) : (
+                    <div className="previous-projects-list">
+                        {previousProjects.map(project => (
+                            <div className="project" key={project.id}>
+                                <div className="title">{project.name}</div>
+                                <div className="view-project-button">
+                                    <button 
+                                        onClick={() => 
+                                            navigate(`/projects/${project.id}/${encodeURIComponent(project.name)}`)
+                                        }
+                                    >
+                                        <span>View</span><FaArrowRight className="previous-arrow-icon"/>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </section>
         </div> 
     );
