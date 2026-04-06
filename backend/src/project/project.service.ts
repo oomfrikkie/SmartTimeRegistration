@@ -42,13 +42,13 @@ export class ProjectService {
     });
 
     if (dto.start_date) {
-      project.startDate = new Date(dto.start_date);
+      project.start_date = new Date(dto.start_date);
     }
     if (dto.end_date) {
-      project.endDate = new Date(dto.end_date);
+      project.end_date = new Date(dto.end_date);
     }
 
-    if (project.startDate && project.endDate && project.startDate > project.endDate) {
+    if (project.start_date && project.end_date && project.start_date > project.end_date) {
       throw new BadRequestException('End date cannot be before start date');
     }
 

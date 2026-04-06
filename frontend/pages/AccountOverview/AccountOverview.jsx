@@ -11,7 +11,8 @@ import './accountoverview.css';
 export default function AccountOverview() {
     const [user, setUser] = useState(null);
     const [accountID, setAccountID] = useState(0);
-    const [projects, setProjects] = useState([]);
+    const [currentProjects, setCurrentProjects] = useState([]);
+    const [previousProjects, setPreviousProjects] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -41,11 +42,20 @@ export default function AccountOverview() {
             });
             const data = await response.json();
 
-            const projectList = (data || []).map((project) => ({
-            id: project.id,
-            name: project.name || "Unnamed Project",
-        }));
-            setProjects(projectList);
+            const currentProjectList = (data || [])
+                .filter(project => project.status == "ongoing")
+                .map((project) => ({
+                    id: project.id,
+                    name: project.name || "Unnamed Project",
+                }));
+            setCurrentProjects(currentProjectList);
+
+            const previousProjectsList = (data || [])
+                .filter(project => project.status = "completed")
+                .map((project) => ({
+                    id: project.id,
+                    name: project.name || "Unnamed Project",
+                }));
         } catch (error) {
             console.error('Error fetching projects:', error);
         }
@@ -115,11 +125,11 @@ export default function AccountOverview() {
             <section className="current-projects">
                 <h2>Current Projects</h2>
 
-                {projects.length === 0 ? (
+                {currentProjects.length === 0 ? (
                     <p>You are curretly not part of any project.</p>
                 ) : (
                     <div className="projects-list">
-                        {projects.map(project => (
+                        {currentProjects.map(project => (
                             <div className="project" key={project.id}>
                                 <div className="title">{project.name}</div>
                                 <div className="view-project-button">

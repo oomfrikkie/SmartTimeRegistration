@@ -2,8 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeUpdate, Before
 import { ProjectMember } from 'src/projectmember/projectmember.entity';
 
 export enum ProjectStatus {
-  ONGOING = 'Ongoing',
-  COMPLETED = 'Completed'
+  ONGOING = 'ongoing',
+  COMPLETED = 'completed'
 }
 
 @Entity()
@@ -22,10 +22,10 @@ export class Project {
   status : ProjectStatus;
 
   @Column({ type: 'date', nullable: true })
-  startDate: Date;
+  start_date: Date;
 
   @Column({ type: 'date', nullable: true })
-  endDate: Date;
+  end_date: Date;
 
   // One project → many project members
   @OneToMany(() => ProjectMember, (member) => member.project)
@@ -35,8 +35,8 @@ export class Project {
   @BeforeUpdate()
   @BeforeInsert()
   updateEndDateOnFinalize() {
-    if (this.status === ProjectStatus.COMPLETED && !this.endDate) {
-      this.endDate = new Date();
+    if (this.status === ProjectStatus.COMPLETED && !this.end_date) {
+      this.end_date = new Date();
     }
   }
 
@@ -44,11 +44,11 @@ export class Project {
   @BeforeInsert()
   @BeforeUpdate()
   validateDates() {
-    if (this.startDate && this.endDate && this.startDate > this.endDate) {
+    if (this.start_date && this.end_date && this.start_date > this.end_date) {
       throw new Error('Start date cannot be after end date');
     }
     
-    if (this.status === ProjectStatus.COMPLETED && !this.endDate) {
+    if (this.status === ProjectStatus.COMPLETED && !this.end_date) {
       throw new Error('Finalized projects must have an end date');
     }
   }
