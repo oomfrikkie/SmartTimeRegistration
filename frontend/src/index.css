@@ -82,7 +82,12 @@ a:visited{
     color: inherit;
 }
 
-/* Buttons */
+
 button {
   font-family: var(--font-body);
+}
+
+body{
+  padding: 0;
+  margin: 0;
 }
