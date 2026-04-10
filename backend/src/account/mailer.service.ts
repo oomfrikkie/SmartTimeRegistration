@@ -6,6 +6,12 @@ import * as process from 'node:process';
 export class MailerService {
   private transporter: nodemailer.Transporter;
 
+  // Set your Mailtrap credentials in .env, .env.test, or your environment:
+  // MAIL_USER=your_mailtrap_user
+  // MAIL_PASS=your_mailtrap_pass
+  // MAIL_HOST=sandbox.smtp.mailtrap.io
+  // MAIL_PORT=2525
+  // MAIL_FROM=your_from_email
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST || 'sandbox.smtp.mailtrap.io',
@@ -44,7 +50,7 @@ export class MailerService {
     projectName: string,
   ): Promise<void> {
     await this.transporter.sendMail({
-      from: process.env.MAIL_FROM,
+      from: process.env.MAIL_FROM || '"IT-HUB" <noreply@ithub.com>',
       to: toEmail,
       subject: `You've been invited to join ${projectName}`,
       html: `

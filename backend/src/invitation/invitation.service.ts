@@ -21,24 +21,33 @@ export class InvitationService {
         const results: ProjectInvitation[] = [];
         
         for (const inviteeId of inviteeIds) {
-        // Check if a memeber is already invited
-        const existing = await this.invitationRepo.findOne({
+          // Check if user is already a project member
+          const isMember = await this.memberRepo.findOne({
             where: {
-            project: { id: projectId },
-            invitee: { id: inviteeId },
-            status: InvitationStatus.PENDING,
+              project_id: projectId,
+              account_id: inviteeId,
             },
-        });
-        if (existing) continue;
+          });
+          if (isMember) continue;
 
-        const invitation = this.invitationRepo.create({
+          // Check if a member is already invited
+          const existing = await this.invitationRepo.findOne({
+            where: {
+              project: { id: projectId },
+              invitee: { id: inviteeId },
+              status: InvitationStatus.PENDING,
+            },
+          });
+          if (existing) continue;
+
+          const invitation = this.invitationRepo.create({
             project: { id: projectId } as any,
             invitee: { id: inviteeId } as any,
             inviter: { id: inviterId } as any,
             status: InvitationStatus.PENDING,
-        });
-        await this.invitationRepo.save(invitation);
-        results.push(invitation);
+          });
+          await this.invitationRepo.save(invitation);
+          results.push(invitation);
         }
 
         // Send emails — load full data for each invitation
