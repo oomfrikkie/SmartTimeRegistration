@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, PrimaryColumn, JoinColumn } from 'typeorm';
-import { Project } from 'src/project/project.entity';
-import { Account } from 'src/account/account.entity';
+import { Project } from '../project/project.entity';
+import { Account } from '../account/account.entity';
 import { ProjectMemberRole } from './enum/projectmember.enum';
 
 @Entity({ name: 'project_member' })

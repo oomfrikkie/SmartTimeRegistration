@@ -13,14 +13,16 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../../.env.test', '../../.env'] }),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get<string>('POSTGRES_HOST') || 'postgres',
+        host:
+          config.get<string>('POSTGRES_HOST') ||
+          (process.env.JEST_WORKER_ID ? 'localhost' : 'postgres'),
         port: parseInt(config.get<string>('POSTGRES_PORT') || '5432', 10),
         username: config.get<string>('POSTGRES_USER') || 'admin',
         password: config.get<string>('POSTGRES_PASSWORD') || 'admin',
