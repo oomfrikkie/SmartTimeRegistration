@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 
 import { Project } from './project.entity';
 import { ProjectMember } from 'src/projectmember/projectmember.entity';
@@ -196,5 +196,65 @@ export class ProjectService {
         email: account.email,
       },
     };
+  }
+
+  async deleteProject(project_id: number, account_id: number){
+    const project = await this.projectRepo.findOne({
+      where: {id: project_id}
+    });
+
+    if(!project){
+      throw new NotFoundException("Project cannot be found");
+    }
+
+    const account = await this.accountRepo.findOne({
+      where: {id: account_id}
+    })
+
+    if (!account){
+      throw new NotFoundException("Account cannot be found");
+    }
+
+    const role = await this.getMyRoleInProject(project_id, account_id);
+
+    if(!role.isAdmin){
+      throw new ForbiddenException("Only project admins may delete the project");
+    }
+
+    const deletedProject = {
+      id: project.id,
+      name: project.name
+    }
+
+     await this.projectMemberRepo.delete({ project_id: project_id });
+  await this.projectRepo.delete({ id: project_id });
+
+    return {
+      message: "Project deleted successfully",
+      project: deletedProject,
+    }
+  }
+
+  async completeProject(project_id: number){
+    const project = await this.projectRepo.findOne({
+      where: {id: project_id}
+    })
+
+    if(!project){
+      throw new NotFoundException("Project cannot be found");
+    }
+
+    project.status = ProjectStatus.COMPLETED;
+
+    const updatedProject = await this.projectRepo.save(project)
+
+    return{
+      message: "Project completed and is now updated",
+      project: {
+        id: updatedProject.id,
+        name: updatedProject.name,
+        status: updatedProject.status,
+      }
+    }
   }
 }

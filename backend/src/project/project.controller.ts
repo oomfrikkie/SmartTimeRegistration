@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query, Param} from '@nestjs/common';
+import { Controller, Patch, Post, Body, Get, Query, Param, Delete, ParseIntPipe} from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto-project/create-project.dto';
 import { AddUserDto } from './dto-project/add-user.dto';
@@ -40,4 +40,20 @@ export class ProjectController {
       Number(account_id),
     );
   }
+
+  @Delete(':project_id')
+  async deleteProject(
+    @Param('project_id', ParseIntPipe) project_id: number,
+    @Query('account_id', ParseIntPipe) account_id: number,
+  ) {
+    return this.projectService.deleteProject(project_id, account_id);
+  }
+
+  
+@Patch(':project_id/complete')
+async completeProject(
+  @Param('project_id', ParseIntPipe) project_id: number,
+) {
+  return this.projectService.completeProject(project_id);
+}
 }

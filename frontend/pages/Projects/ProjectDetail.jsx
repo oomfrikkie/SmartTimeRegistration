@@ -12,7 +12,51 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
   const [currentRole, setCurrentRole] = useState("");
-const [userID, setUserID] = useState(null);
+  const [userID, setUserID] = useState(null);
+
+  // Handler for deleting the project
+  const handleDeleteProject = async () => {
+    if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(
+        `http://localhost:3000/projects/${projectId}?account_id=${userID}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to delete project");
+      }
+      navigate("/projects");
+    } catch (err) {
+      alert(err.message || "Error deleting project");
+    }
+  };
+
+  // Handler for completing the project
+  const handleCompleteProject = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/projects/${projectId}/complete`,
+        {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to complete project");
+      }
+      alert("Project marked as completed.");
+      // Optionally, refresh or update UI here
+    } catch (err) {
+      alert(err.message || "Error completing project");
+    }
+  };
+
+
 
 useEffect(() => {
   fetchCurrentUsersRole();
@@ -289,6 +333,18 @@ if (!res.ok) {
           </div>
         </div>
       )}
+    {/* ...existing code... */}
+    {/* Admin-only actions at the bottom */}
+    {currentRole === "admin" && (
+      <div className="project-bottom-actions" style={{ marginTop: 40, display: "flex", gap: 16, justifyContent: "center" }}>
+        <button className="action-btn action-complete" onClick={handleCompleteProject}>
+          Complete Project
+        </button>
+        <button className="action-btn action-delete" onClick={handleDeleteProject} style={{ background: '#ff4f4f', color: '#fff' }}>
+          Delete Project
+        </button>
+      </div>
+    )}
     </div>
   );
 }
