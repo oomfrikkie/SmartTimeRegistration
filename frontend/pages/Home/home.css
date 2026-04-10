@@ -247,6 +247,7 @@
   font-size: 0.85rem;
   background: #fff;
   color: #333;
+  width: 95.5%
 }
 
 .filter-group input:focus {
@@ -265,6 +266,7 @@
   font-weight: 500;
   color: #666;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .btn-clear:hover {
