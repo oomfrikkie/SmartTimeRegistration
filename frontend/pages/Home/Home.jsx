@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useMsal } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
 import { getUserFromToken, getAuthHeaders, isTokenExpired } from "../../src/utils/auth";
 import "./home.css";
 
@@ -15,7 +16,10 @@ export default function Home() {
   const [importStartDate, setImportStartDate] = useState("");
   const [importEndDate, setImportEndDate] = useState("");
   const [importing, setImporting] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
   const { instance } = useMsal();
+  const navigate = useNavigate();
 
   const user = getUserFromToken();
   const accountId = user ? user.id : null;
@@ -24,6 +28,7 @@ export default function Home() {
   syncMicrosoftUser();
   fetchEvents();
   fetchAccount();
+  fetchProjects();
 }, []);
 
   const fetchAccount = async () => {
@@ -38,6 +43,31 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Error fetching account:", error);
+    }
+  };
+
+  const fetchProjects = async () => {
+    if (!user) return;
+    setProjectsLoading(true);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/projects/by-account?account_id=${user.id}`,
+        { headers: getAuthHeaders() }
+      );
+      if (!res.ok) throw new Error("Failed to fetch projects");
+      const data = await res.json();
+      setProjects(
+        (data || []).map((p) => ({
+          id: p.id,
+          name: p.name || "Unnamed Project",
+          memberCount: p.members ? p.members.length : 0,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setProjects([]);
+    } finally {
+      setProjectsLoading(false);
     }
   };
 
@@ -119,8 +149,8 @@ export default function Home() {
   const totalHours = events.reduce((sum, e) => sum + parseFloat(e.total_hours || 0), 0);
 
   // Extract projects from event names (e.g., "Admin - Task" -> "Admin")
-  const projects = [...new Set(events.map((e) => e.name.split(" - ")[0]))];
-  const activeProjects = projects.length;
+  const eventProjects = [...new Set(events.map((e) => e.name.split(" - ")[0]))];
+  const activeProjects = eventProjects.length;
 
   // Pending events: events from today onwards
   const today = new Date().toISOString().split("T")[0];
@@ -318,10 +348,10 @@ export default function Home() {
               <p>Time allocation per project</p>
             </div>
             <div className="chart-container">
-              {projects.length === 0 ? (
+              {eventProjects.length === 0 ? (
                 <p style={{ textAlign: "center", color: "#999" }}>No projects yet</p>
               ) : (
-                projects.map((project) => {
+                eventProjects.map((project) => {
                   const hours = hoursPerProject[project];
                   const maxHours = Math.max(...Object.values(hoursPerProject));
                   const percentage = (hours / maxHours) * 100;
@@ -360,6 +390,58 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Projects Widget */}
+          <div className="projects-widget-card">
+            <div className="projects-widget-header">
+              <div>
+                <h3>My Projects</h3>
+                <p>Your active projects</p>
+              </div>
+              <button
+                className="projects-widget-btn-all"
+                onClick={() => navigate("/projects")}
+              >
+                View All
+              </button>
+            </div>
+            <div className="projects-widget-list">
+              {projectsLoading ? (
+                <p className="projects-widget-empty">Loading...</p>
+              ) : projects.length === 0 ? (
+                <div className="projects-widget-empty-state">
+                  <p>No projects yet.</p>
+                  <button
+                    className="projects-widget-btn-create"
+                    onClick={() => navigate("/projects/create")}
+                  >
+                    Create Project
+                  </button>
+                </div>
+              ) : (
+                projects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="projects-widget-item"
+                    onClick={() =>
+                      navigate(
+                        `/projects/${project.id}/${encodeURIComponent(project.name)}`
+                      )
+                    }
+                  >
+                    <div className="projects-widget-dot" />
+                    <div className="projects-widget-item-info">
+                      <span className="projects-widget-item-name">{project.name}</span>
+                      <span className="projects-widget-item-meta">
+                        {project.memberCount} member{project.memberCount !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <span className="projects-widget-item-arrow">→</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right Section */}
