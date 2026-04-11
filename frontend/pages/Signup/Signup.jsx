@@ -81,15 +81,16 @@ function Signup() {
       return;
     }
 
-    // Password match validation
-    if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Passwords do not match");
+    // Password format validation
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setErrorMessage("Your password must be at least 6 characters and contain at least 1 uppercase letter, 1 number, and 1 special character.");
       return;
     }
 
-    // Password length validation
-    if (formData.password.length < 6) {
-      setErrorMessage("Password must be at least 6 characters");
+    // Password match validation
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Passwords do not match");
       return;
     }
 
