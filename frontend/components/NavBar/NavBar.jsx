@@ -6,7 +6,7 @@ export default function NavBar() {
     return (
         <nav className="navbar">
             <NavLink to="/home" className="navbar-logo">
-                ITHB
+                <img src="../src/assets/logo.png" alt="logo" />
             </NavLink>
             <div className="navbar-links">
                 <NavLink to="/home" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>Home</NavLink>

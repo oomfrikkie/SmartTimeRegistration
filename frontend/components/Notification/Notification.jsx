@@ -51,7 +51,7 @@ export default function Notification() {
         <div className="notification-bell" ref={ref}>
             <button className="bell-btn" onClick={() =>
                 setOpen(!open)}>
-                <CgBell />
+                <CgBell className="bell-icon" />
                 {invitations.length > 0 && (
                     <span className="bell-badge">{invitations.length}</span>
                 )}
