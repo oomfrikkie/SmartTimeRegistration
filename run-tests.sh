@@ -44,6 +44,9 @@ run_test "Microsoft Auth Test" "test/microsoftAuth.e2e-spec.ts"
 sleep 1
 
 run_test "Project/Invite Test" "test/project-invite.e2e-spec.ts"
+sleep 1
+
+run_test "Password Reset Test" "test/passwordReset.e2e-spec.ts"
 
 echo ""
 echo -e "${YELLOW}-----------------------------------${NC}"
