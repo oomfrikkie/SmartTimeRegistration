@@ -16,11 +16,10 @@ export class InvitationService {
         private mailerService: MailerService,
     ) {}
 
-    async sendInvitations(projectId: number, inviteeIds: number[], inviterId: number) {
-        console.log('sendInvitations called:', { projectId, inviteeIds, inviterId });
+    async sendInvitations(projectId: number, invitees: {id: number, assigned_hours?: number}[], inviterId: number) {
+        console.log('sendInvitations called:', { projectId, invitees, inviterId });
         const results: ProjectInvitation[] = [];
-        
-        for (const inviteeId of inviteeIds) {
+        for (const {id: inviteeId, assigned_hours} of invitees) {
           // Check if user is already a project member
           const isMember = await this.memberRepo.findOne({
             where: {
@@ -44,6 +43,7 @@ export class InvitationService {
             project: { id: projectId } as any,
             invitee: { id: inviteeId } as any,
             inviter: { id: inviterId } as any,
+            assigned_hours,
             status: InvitationStatus.PENDING,
           });
           await this.invitationRepo.save(invitation);

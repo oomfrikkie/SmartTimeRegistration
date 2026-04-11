@@ -29,4 +29,11 @@ export class ProjectMember {
     enum: ProjectMemberRole,
   })
   roles: ProjectMemberRole;
+
+  @Column({
+    name: 'assigned_hours',
+    type: 'int',
+    nullable: true,
+  })
+  assigned_hours?: number;
 }
