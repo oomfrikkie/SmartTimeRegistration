@@ -336,11 +336,11 @@ if (!res.ok) {
     {/* ...existing code... */}
     {/* Admin-only actions at the bottom */}
     {currentRole === "admin" && (
-      <div className="project-bottom-actions" style={{ marginTop: 40, display: "flex", gap: 16, justifyContent: "center" }}>
-        <button className="action-btn action-complete" onClick={handleCompleteProject}>
+      <div className="project-bottom-actions">
+        <button className="action-complete-btn" onClick={handleCompleteProject}>
           Complete Project
         </button>
-        <button className="action-btn action-delete" onClick={handleDeleteProject} style={{ background: '#ff4f4f', color: '#fff' }}>
+        <button className="action-delete-btn" onClick={handleDeleteProject}>
           Delete Project
         </button>
       </div>

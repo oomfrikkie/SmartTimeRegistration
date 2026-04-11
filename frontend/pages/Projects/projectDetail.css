@@ -276,6 +276,26 @@
     background: #d5d5e0;
 }
 
+.project-bottom-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+}
+
+.action-complete-btn {
+    padding: 0.8rem;
+    font-weight: 500;
+    background-color: #1a1a4e;
+    color: white;
+}
+
+.action-delete-btn {
+    background-color: #ff4f4f;
+    color: #fff;
+    font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .members-grid {
