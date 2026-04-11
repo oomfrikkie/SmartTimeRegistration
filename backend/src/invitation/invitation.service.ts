@@ -87,11 +87,12 @@ async getPendingForUser(userId: number) {
     invitation.status = InvitationStatus.ACCEPTED;
     await this.invitationRepo.save(invitation);
 
-    // Add to project members as EMPLOYEE
+    // Add to project members as EMPLOYEE, include assigned_hours
     const member = this.memberRepo.create({
       project: invitation.project,
       account: invitation.invitee,
       roles: ProjectMemberRole.EMPLOYEE,
+      assigned_hours: invitation.assigned_hours ?? null,
     });
     await this.memberRepo.save(member);
 
