@@ -1,7 +1,9 @@
-import { Controller, Patch, Post, Body, Get, Query, Param, Delete, ParseIntPipe} from '@nestjs/common';
+import { Controller, Patch, Post, Body, Get, Query, Param, Delete, ParseIntPipe, UseGuards, Req } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto-project/create-project.dto';
 import { AddUserDto } from './dto-project/add-user.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('projects')
 export class ProjectController {
@@ -22,9 +24,11 @@ export class ProjectController {
     return this.projectService.getAllProjects();
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
   @Get('by-account')
-  getProjectsByAccount(@Query('account_id') account_id: string) {
-    return this.projectService.getProjectsByAccountID(Number(account_id));
+  getProjectsByAccount(@Req() req) {
+    return this.projectService.getProjectsByAccountID(req.user.id);
   }
 
   @Get('members')
@@ -50,10 +54,10 @@ export class ProjectController {
   }
 
   
-@Patch(':project_id/complete')
-async completeProject(
-  @Param('project_id', ParseIntPipe) project_id: number,
-) {
-  return this.projectService.completeProject(project_id);
-}
+  @Patch(':project_id/complete')
+  async completeProject(
+    @Param('project_id', ParseIntPipe) project_id: number,
+  ) {
+    return this.projectService.completeProject(project_id);
+  }
 }
