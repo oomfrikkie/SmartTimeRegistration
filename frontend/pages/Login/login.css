@@ -1,6 +1,5 @@
 body{
-  font-family: Arial, sans-serif;
-  background: #f5f6f8;
+  font-family: Arial, sans-serif; 
 }
 
 .auth-page{
@@ -30,7 +29,8 @@ body{
 }
 
 .auth-card input{
-  width:100%;
+  box-sizing: border-box;
+  width: 100%;
   padding:10px;
   margin-top:5px;
   border:1px solid #ccc;

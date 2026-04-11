@@ -247,7 +247,8 @@
   font-size: 0.85rem;
   background: #fff;
   color: #333;
-  width: 95.5%
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .filter-group input:focus {
