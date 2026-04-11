@@ -118,6 +118,35 @@ export default function Home() {
 };
   
 
+  const handleImport = async () => {
+    if (!icsUrl || !importStartDate || !importEndDate) return;
+    setImporting(true);
+    try {
+      const res = await fetch("http://localhost:3000/import", {
+        method: "POST",
+        headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          icsUrl,
+          start_date: importStartDate,
+          end_date: importEndDate,
+          account_id: accountId,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchEvents();
+        setIcsUrl("");
+        setImportStartDate("");
+        setImportEndDate("");
+      } else {
+        console.error("Import failed:", data);
+      }
+    } catch (error) {
+      console.error("Error importing calendar:", error);
+    }
+    setImporting(false);
+  };
+
   const fetchEvents = async () => {
     if (!accountId) return;
 
@@ -434,6 +463,45 @@ export default function Home() {
               </div>
               <button className="btn-clear" onClick={handleClearFilters}>
                 Clear Filters
+              </button>
+            </div>
+          </div>
+
+          {/* iCal Import */}
+          <div className="filter-card">
+            <h3>Import Calendar</h3>
+            <div className="filter-inputs">
+              <div className="filter-group">
+                <label>iCal URL</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={icsUrl}
+                  onChange={(e) => setIcsUrl(e.target.value)}
+                />
+              </div>
+              <div className="filter-group">
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  value={importStartDate}
+                  onChange={(e) => setImportStartDate(e.target.value)}
+                />
+              </div>
+              <div className="filter-group">
+                <label>End Date</label>
+                <input
+                  type="date"
+                  value={importEndDate}
+                  onChange={(e) => setImportEndDate(e.target.value)}
+                />
+              </div>
+              <button
+                className="btn-import"
+                onClick={handleImport}
+                disabled={importing || !icsUrl || !importStartDate || !importEndDate}
+              >
+                {importing ? "Importing..." : "Import"}
               </button>
             </div>
           </div>
