@@ -303,37 +303,54 @@ export default function Home() {
     <div className="home-container">
       <div className="home-header">
         <div className="header-title">
-          <h1>Welcome back</h1>
+          <h1>WELCOME BACK</h1>
           <p>Here is your productivity overview</p>
         </div>
+        <img
+          className="hero-bars-img"
+          src="/WhatsApp Image 2026-04-12 at 00.15.10.jpeg"
+          alt=""
+        />
       </div>
 
       {/* Stat Cards */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: "#e8e9ff" }}></div>
           <div className="stat-content">
             <p className="stat-label">Total Hours</p>
             <h2 className="stat-value">{totalHours.toFixed(1)}</h2>
             <span className="stat-subtext">hours</span>
           </div>
+          <div className="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: "#ffe8e8" }}></div>
           <div className="stat-content">
             <p className="stat-label">Active Projects</p>
             <h2 className="stat-value">{activeProjects}</h2>
             <span className="stat-subtext">projects</span>
           </div>
+          <div className="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: "#e8f5ff" }}></div>
           <div className="stat-content">
             <p className="stat-label">Pending Events</p>
             <h2 className="stat-value">{pendingEvents}</h2>
             <span className="stat-subtext">events</span>
+          </div>
+          <div className="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -391,57 +408,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Projects Widget */}
-          <div className="projects-widget-card">
-            <div className="projects-widget-header">
-              <div>
-                <h3>My Projects</h3>
-                <p>Your active projects</p>
-              </div>
-              <button
-                className="projects-widget-btn-all"
-                onClick={() => navigate("/projects")}
-              >
-                View All
-              </button>
-            </div>
-            <div className="projects-widget-list">
-              {projectsLoading ? (
-                <p className="projects-widget-empty">Loading...</p>
-              ) : projects.length === 0 ? (
-                <div className="projects-widget-empty-state">
-                  <p>No projects yet.</p>
-                  <button
-                    className="projects-widget-btn-create"
-                    onClick={() => navigate("/projects/create")}
-                  >
-                    Create Project
-                  </button>
-                </div>
-              ) : (
-                projects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="projects-widget-item"
-                    onClick={() =>
-                      navigate(
-                        `/projects/${project.id}/${encodeURIComponent(project.name)}`
-                      )
-                    }
-                  >
-                    <div className="projects-widget-dot" />
-                    <div className="projects-widget-item-info">
-                      <span className="projects-widget-item-name">{project.name}</span>
-                      <span className="projects-widget-item-meta">
-                        {project.memberCount} member{project.memberCount !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <span className="projects-widget-item-arrow">→</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
         </div>
 
         {/* Right Section */}
@@ -471,9 +437,60 @@ export default function Home() {
               </button>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Past Events */}
-          <div className="events-card">
+      {/* Projects Widget - Full Width */}
+      <div className="projects-widget-card">
+        <div className="projects-widget-header">
+          <h3>Your Projects</h3>
+          <button
+            className="projects-widget-btn-create"
+            onClick={() => navigate("/projects/create")}
+          >
+            Create Project
+          </button>
+        </div>
+        <div className="projects-widget-list">
+          {projectsLoading ? (
+            <p className="projects-widget-empty">Loading...</p>
+          ) : projects.length === 0 ? (
+            <div className="projects-widget-empty-state">
+              <p>You haven't joined any projects yet.</p>
+              <button
+                className="projects-widget-btn-join"
+                onClick={() => navigate("/projects/create")}
+              >
+                Create Your First Project
+              </button>
+            </div>
+          ) : (
+            projects.map((project) => (
+              <div
+                key={project.id}
+                className="projects-widget-item"
+                onClick={() =>
+                  navigate(
+                    `/projects/${project.id}/${encodeURIComponent(project.name)}`
+                  )
+                }
+              >
+                <div className="projects-widget-dot" />
+                <div className="projects-widget-item-info">
+                  <span className="projects-widget-item-name">{project.name}</span>
+                  <span className="projects-widget-item-meta">
+                    {project.memberCount} member{project.memberCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <span className="projects-widget-item-arrow">→</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Past Events - Full Width */}
+      <div className="events-card">
             <div className="events-header">
               <h3>Past Events</h3>
               <div className="events-actions">
@@ -533,8 +550,6 @@ export default function Home() {
               <button className="btn-view-all">View Full Calendar →</button>
             )}
           </div>
-        </div>
-      </div>
     </div>
   );
 }
