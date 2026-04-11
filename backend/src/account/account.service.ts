@@ -116,11 +116,27 @@ export class AccountService {
       throw new BadRequestException('Email and password are required');
     }
 
+    // Input validation for name and surname
+    const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+    if (!usernameRegex.test(dto.name) || !usernameRegex.test(dto.surname)) {
+      throw new BadRequestException(
+        "Name/surname contains suspicious characters. Only alphanumericals allowed."
+      );
+    }
+
     // Checking the format of the email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {
       throw new BadRequestException(
         'Invalid email format. Must contain @ and/or .com',
+      );
+    }
+
+    // Password format validation
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/;
+    if (!passwordRegex.test(dto.password)) {
+      throw new BadRequestException(
+        "This password is not strong enough. It must be at least 6 characters long, contain at least 1 special character, 1 uppercase character and 1 number."
       );
     }
 
