@@ -92,7 +92,7 @@ async getPendingForUser(userId: number) {
       project: invitation.project,
       account: invitation.invitee,
       roles: ProjectMemberRole.EMPLOYEE,
-      assigned_hours: invitation.assigned_hours ?? null,
+      assigned_hours: invitation.assigned_hours ?? undefined,
     });
     await this.memberRepo.save(member);
 
