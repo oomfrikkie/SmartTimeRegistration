@@ -74,6 +74,13 @@ function Signup() {
       return;
     }
 
+    // Input validation for name and surname
+    const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+    if (!usernameRegex.test(formData.name) || !usernameRegex.test(formData.surname)) {
+      setErrorMessage("Name and surname can only contain letters, numbers, and underscores");
+      return false;
+    }
+
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
