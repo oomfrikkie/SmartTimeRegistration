@@ -111,7 +111,7 @@ export default function Projects() {
 
               <div className="project-detail">
                 <FaRegCalendarAlt />
-                <span>{project.startDate.split('-').reverse().join('/')} to {project.endDate.split('-').reverse().join('/')}</span>
+                <span>{project.startDate.split('-').reverse().join('/')} until {project.endDate.split('-').reverse().join('/')}</span>
               </div>
 
               <div className="project-detail">
