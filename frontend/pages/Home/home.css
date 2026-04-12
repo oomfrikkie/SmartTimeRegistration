@@ -395,8 +395,8 @@
 
 .btn-export {
   padding: 0.4rem 0.75rem;
-  background: #4a90e2;
-  border: 1px solid #4a90e2;
+  background: #9b0093;
+  border: 1px solid #9b0093;
   border-radius: 0.4rem;
   cursor: pointer;
   font-size: 1rem;
@@ -406,8 +406,8 @@
 }
 
 .btn-export:hover {
-  background: #357abd;
-  border-color: #357abd;
+  background: #580154;
+  border-color: #580154;
 }
 
 .btn-export:disabled {
@@ -519,25 +519,6 @@
   font-weight: 700;
   font-size: 0.95rem;
   color: #4a90e2;
-}
-
-.btn-view-all {
-  width: 100%;
-  padding: 0.65rem;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 0.4rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #4a90e2;
-  transition: all 0.2s ease;
-}
-
-.btn-view-all:hover {
-  background: #4a90e2;
-  color: #fff;
-  border-color: #4a90e2;
 }
 
 /* Projects Widget */
