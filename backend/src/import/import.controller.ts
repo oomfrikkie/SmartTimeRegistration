@@ -10,8 +10,8 @@ export class ImportController {
   async importCalendar(@Body() dto: ImportCalendarDto) {
     return this.importService.importAndSaveEvents(
       dto.icsUrl,
-      dto.start_date,
-      dto.end_date,
+      new Date(dto.start_date),
+      new Date(dto.end_date),
       dto.account_id,
     );
   }

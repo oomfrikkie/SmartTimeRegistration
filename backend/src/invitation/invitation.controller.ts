@@ -13,7 +13,7 @@ export class InvitationController {
 
   @Post('send')
   async send(@Body() dto: SendInvitationDto, @Req() req: any) {
-    return this.invitationService.sendInvitations(dto.projectId, dto.inviteeIds, req.user.id);
+    return this.invitationService.sendInvitations(dto.projectId, dto.invitees, req.user.id);
   }
 
   @Get('pending')

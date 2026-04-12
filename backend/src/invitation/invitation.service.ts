@@ -16,11 +16,10 @@ export class InvitationService {
         private mailerService: MailerService,
     ) {}
 
-    async sendInvitations(projectId: number, inviteeIds: number[], inviterId: number) {
-        console.log('sendInvitations called:', { projectId, inviteeIds, inviterId });
+    async sendInvitations(projectId: number, invitees: {id: number, assigned_hours?: number}[], inviterId: number) {
+        console.log('sendInvitations called:', { projectId, invitees, inviterId });
         const results: ProjectInvitation[] = [];
-        
-        for (const inviteeId of inviteeIds) {
+        for (const {id: inviteeId, assigned_hours} of invitees) {
           // Check if user is already a project member
           const isMember = await this.memberRepo.findOne({
             where: {
@@ -44,6 +43,7 @@ export class InvitationService {
             project: { id: projectId } as any,
             invitee: { id: inviteeId } as any,
             inviter: { id: inviterId } as any,
+            assigned_hours,
             status: InvitationStatus.PENDING,
           });
           await this.invitationRepo.save(invitation);
@@ -87,11 +87,12 @@ async getPendingForUser(userId: number) {
     invitation.status = InvitationStatus.ACCEPTED;
     await this.invitationRepo.save(invitation);
 
-    // Add to project members as EMPLOYEE
+    // Add to project members as EMPLOYEE, include assigned_hours
     const member = this.memberRepo.create({
-      project: invitation.project,
-      account: invitation.invitee,
+      project_id: invitation.project.id,
+      account_id: invitation.invitee.id,
       roles: ProjectMemberRole.EMPLOYEE,
+      assigned_hours: invitation.assigned_hours ?? undefined,
     });
     await this.memberRepo.save(member);
 

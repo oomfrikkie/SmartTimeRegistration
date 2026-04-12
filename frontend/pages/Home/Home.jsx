@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useMsal } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
 import { getUserFromToken, getAuthHeaders, isTokenExpired } from "../../src/utils/auth";
 import "./home.css";
 
@@ -15,7 +16,10 @@ export default function Home() {
   const [importStartDate, setImportStartDate] = useState("");
   const [importEndDate, setImportEndDate] = useState("");
   const [importing, setImporting] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
   const { instance } = useMsal();
+  const navigate = useNavigate();
 
   const user = getUserFromToken();
   const accountId = user ? user.id : null;
@@ -24,6 +28,7 @@ export default function Home() {
   syncMicrosoftUser();
   fetchEvents();
   fetchAccount();
+  fetchProjects();
 }, []);
 
   const fetchAccount = async () => {
@@ -38,6 +43,31 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Error fetching account:", error);
+    }
+  };
+
+  const fetchProjects = async () => {
+    if (!user) return;
+    setProjectsLoading(true);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/projects/by-account?account_id=${user.id}`,
+        { headers: getAuthHeaders() }
+      );
+      if (!res.ok) throw new Error("Failed to fetch projects");
+      const data = await res.json();
+      setProjects(
+        (data || []).map((p) => ({
+          id: p.id,
+          name: p.name || "Unnamed Project",
+          memberCount: p.members ? p.members.length : 0,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setProjects([]);
+    } finally {
+      setProjectsLoading(false);
     }
   };
 
@@ -88,6 +118,35 @@ export default function Home() {
 };
   
 
+  const handleImport = async () => {
+    if (!icsUrl || !importStartDate || !importEndDate) return;
+    setImporting(true);
+    try {
+      const res = await fetch("http://localhost:3000/import", {
+        method: "POST",
+        headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          icsUrl,
+          start_date: importStartDate,
+          end_date: importEndDate,
+          account_id: accountId,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchEvents();
+        setIcsUrl("");
+        setImportStartDate("");
+        setImportEndDate("");
+      } else {
+        console.error("Import failed:", data);
+      }
+    } catch (error) {
+      console.error("Error importing calendar:", error);
+    }
+    setImporting(false);
+  };
+
   const fetchEvents = async () => {
     if (!accountId) return;
 
@@ -119,8 +178,8 @@ export default function Home() {
   const totalHours = events.reduce((sum, e) => sum + parseFloat(e.total_hours || 0), 0);
 
   // Extract projects from event names (e.g., "Admin - Task" -> "Admin")
-  const projects = [...new Set(events.map((e) => e.name.split(" - ")[0]))];
-  const activeProjects = projects.length;
+  const eventProjects = [...new Set(events.map((e) => e.name.split(" - ")[0]))];
+  const activeProjects = eventProjects.length;
 
   // Pending events: events from today onwards
   const today = new Date().toISOString().split("T")[0];
@@ -273,37 +332,55 @@ export default function Home() {
     <div className="home-container">
       <div className="home-header">
         <div className="header-title">
-          <h1>Welcome back</h1>
+          <h1>WELCOME BACK</h1>
           <p>Here is your productivity overview</p>
         </div>
+        <img
+          className="hero-bars-img"
+          src="../src/assets/header_pattern.png"
+          alt=""
+        />
       </div>
 
+      <div className="container">
       {/* Stat Cards */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: "#e8e9ff" }}></div>
           <div className="stat-content">
             <p className="stat-label">Total Hours</p>
             <h2 className="stat-value">{totalHours.toFixed(1)}</h2>
             <span className="stat-subtext">hours</span>
           </div>
+          <div className="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: "#ffe8e8" }}></div>
           <div className="stat-content">
             <p className="stat-label">Active Projects</p>
             <h2 className="stat-value">{activeProjects}</h2>
             <span className="stat-subtext">projects</span>
           </div>
+          <div className="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: "#e8f5ff" }}></div>
           <div className="stat-content">
             <p className="stat-label">Pending Events</p>
             <h2 className="stat-value">{pendingEvents}</h2>
             <span className="stat-subtext">events</span>
+          </div>
+          <div className="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -318,10 +395,10 @@ export default function Home() {
               <p>Time allocation per project</p>
             </div>
             <div className="chart-container">
-              {projects.length === 0 ? (
+              {eventProjects.length === 0 ? (
                 <p style={{ textAlign: "center", color: "#999" }}>No projects yet</p>
               ) : (
-                projects.map((project) => {
+                eventProjects.map((project) => {
                   const hours = hoursPerProject[project];
                   const maxHours = Math.max(...Object.values(hoursPerProject));
                   const percentage = (hours / maxHours) * 100;
@@ -360,6 +437,7 @@ export default function Home() {
               </div>
             </div>
           )}
+
         </div>
 
         {/* Right Section */}
@@ -390,8 +468,98 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Past Events */}
-          <div className="events-card">
+          {/* iCal Import */}
+          <div className="filter-card">
+            <h3>Import Calendar</h3>
+            <div className="filter-inputs">
+              <div className="filter-group">
+                <label>iCal URL</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={icsUrl}
+                  onChange={(e) => setIcsUrl(e.target.value)}
+                />
+              </div>
+              <div className="filter-group">
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  value={importStartDate}
+                  onChange={(e) => setImportStartDate(e.target.value)}
+                />
+              </div>
+              <div className="filter-group">
+                <label>End Date</label>
+                <input
+                  type="date"
+                  value={importEndDate}
+                  onChange={(e) => setImportEndDate(e.target.value)}
+                />
+              </div>
+              <button
+                className="btn-import"
+                onClick={handleImport}
+                disabled={importing || !icsUrl || !importStartDate || !importEndDate}
+              >
+                {importing ? "Importing..." : "Import"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Projects Widget - Full Width */}
+      <div className="projects-widget-card">
+        <div className="projects-widget-header">
+          <h3 className="your-projects">Your Projects</h3>
+          <button
+            className="projects-widget-btn-create"
+            onClick={() => navigate("/projects/create")}
+          >
+            Create Project
+          </button>
+        </div>
+        <div className="projects-widget-list">
+          {projectsLoading ? (
+            <p className="projects-widget-empty">Loading...</p>
+          ) : projects.length === 0 ? (
+            <div className="projects-widget-empty-state">
+              <p>You haven't joined any projects yet.</p>
+              <button
+                className="projects-widget-btn-join"
+                onClick={() => navigate("/projects/create")}
+              >
+                Create Your First Project
+              </button>
+            </div>
+          ) : (
+            projects.map((project) => (
+              <div
+                key={project.id}
+                className="projects-widget-item"
+                onClick={() =>
+                  navigate(
+                    `/projects/${project.id}/${encodeURIComponent(project.name)}`
+                  )
+                }
+              >
+                <div className="projects-widget-dot" />
+                <div className="projects-widget-item-info">
+                  <span className="projects-widget-item-name">{project.name}</span>
+                  <span className="projects-widget-item-meta">
+                    {project.memberCount} member{project.memberCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <span className="projects-widget-item-arrow">→</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Past Events - Full Width */}
+      <div className="events-card">
             <div className="events-header">
               <h3>Past Events</h3>
               <div className="events-actions">
@@ -447,12 +615,8 @@ export default function Home() {
                 ))
               )}
             </div>
-            {sortedEvents.length > 0 && (
-              <button className="btn-view-all">View Full Calendar →</button>
-            )}
           </div>
         </div>
-      </div>
     </div>
   );
 }
@@ -473,7 +637,10 @@ function getISOWeek(dateStr) {
 }
 
 function formatDateDutch(dateStr) {
-  const months = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+  const months = ["januari", "februari", "maart", 
+                  "april", "mei", "juni", "juli", 
+                  "augustus", "september", "oktober", 
+                  "november", "december"];
   const d = new Date(dateStr);
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }

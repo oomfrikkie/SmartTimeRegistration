@@ -37,7 +37,7 @@ describe('Project + Invitation Flow (e2e)', () => {
     user2.token = login2.body.account.token || login2.body.token || login2.body.access_token;
   });
 
-  it('should create a project and invite user2', async () => {
+  it('should create a project and invite user2 with assigned_hours', async () => {
     const uniqueName = `Test Project ${Date.now()}`;
     const res = await request(app.getHttpServer())
       .post('/projects')
@@ -50,15 +50,16 @@ describe('Project + Invitation Flow (e2e)', () => {
     expect(res.body).toHaveProperty('project');
     projectId = res.body.project.id;
 
-    // Send invitation to user2
+    // Send invitation to user2 with assigned_hours
+    const assigned_hours = 42;
     const inviteRes = await request(app.getHttpServer())
       .post('/invitation/send')
       .set('Authorization', `Bearer ${user1.token}`)
-      .send({ projectId, inviteeIds: [user2.id] });
+      .send({ projectId, invitees: [{ id: user2.id, assigned_hours }] });
     expect(inviteRes.status).toBe(201);
   });
 
-  it('user2 should see and accept the invite', async () => {
+  it('user2 should see and accept the invite with assigned_hours', async () => {
     // Get pending invites
     const pending = await request(app.getHttpServer())
       .get('/invitation/pending')
@@ -69,6 +70,7 @@ describe('Project + Invitation Flow (e2e)', () => {
     console.log('Pending invites for user2:', pending.body);
     const invite = pending.body.find((i: any) => i.project && i.project.id === projectId);
     expect(invite).toBeDefined();
+    expect(invite.assigned_hours).toBe(42);
     // Accept invite
     const accept = await request(app.getHttpServer())
       .patch(`/invitation/${invite.id}/accept`)

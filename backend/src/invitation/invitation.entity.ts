@@ -25,6 +25,9 @@ export class ProjectInvitation {
     @JoinColumn({ name: 'inviter_id' })
     inviter: Account;
 
+    @Column({ type: 'int', name: 'assigned_hours', nullable: true })
+    assigned_hours?: number;
+
     @Column({ type: 'enum', enum: InvitationStatus, default: InvitationStatus.PENDING })
     status: InvitationStatus;
 

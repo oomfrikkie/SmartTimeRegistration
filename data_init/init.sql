@@ -69,6 +69,7 @@ CREATE TABLE project_member (
     project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
     account_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     roles project_member_role NOT NULL,
+    assigned_hours INT,
     PRIMARY KEY (project_id, account_id)
 );
 
@@ -87,11 +88,12 @@ CREATE TABLE invitations (
     inviter_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     invitee_id INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
+    assigned_hours INT,
     status invitation_status NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Add John Doe as ADMIN to the first project
 -- Assumes the first project and account have id = 1
-INSERT INTO project_member (project_id, account_id, roles)
-VALUES (1, 1, 'admin');
+INSERT INTO project_member (project_id, account_id, roles, assigned_hours)
+VALUES (1, 1, 'admin', 0);
