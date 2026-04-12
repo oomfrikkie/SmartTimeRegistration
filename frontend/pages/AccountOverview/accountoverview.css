@@ -85,11 +85,15 @@ body {
     margin-bottom: 1rem;
 }
 
-.personal-information .reset-password {
+.buttons .desc {
+    margin-top: 1.5rem;
+}
+
+.personal-information .reset-password-btn {
     width: 15%;
 }
 
-.personal-information .log-out {
+.personal-information .log-out-btn {
     width: 10%;
 }
 

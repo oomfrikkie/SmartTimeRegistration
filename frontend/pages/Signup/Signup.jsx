@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
+import "./signup.css";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -12,7 +13,6 @@ function Signup() {
     confirmPassword: ""
   });
 
-  // State for UI feedback
   const [isLoading, setIsLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -22,18 +22,16 @@ function Signup() {
   // For navigation after successful signup
   const navigate = useNavigate();
 
-  // Handle input changes
   const handleChange = (e) => {
       const { name, value } = e.target;
       setFormData(prev => ({
           ...prev,
           [name]: value
       }));
-      // Clear error when user starts typing again
+      
       setErrorMessage("");
   };
 
-  // Microsoft login redirect
   const handleMicrosoftRegister = async () => {
     if (isMicrosoftLoading) {
       return;
@@ -63,12 +61,10 @@ function Signup() {
     }
   };
 
-   // Handle form submission
    const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting form", formData);
     
-    // Basic validation
     if (!formData.name || !formData.surname || !formData.email || !formData.password || !formData.confirmPassword) {
       setErrorMessage("Please fill in all fields");
       return;
@@ -81,7 +77,6 @@ function Signup() {
       return false;
     }
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setErrorMessage("Please enter a valid email address");
@@ -95,7 +90,6 @@ function Signup() {
       return;
     }
 
-    // Password match validation
     if (formData.password !== formData.confirmPassword) {
       setErrorMessage("Passwords do not match");
       return;
@@ -122,11 +116,9 @@ function Signup() {
       const data = await response.json();
 
       if (!response.ok) {
-          // Handle error response from backend
           throw new Error(data.message || 'Registration failed');
       }
 
-      // Successfully created an account
       setSuccessMessage(data.message || "Account created successfully!");
       console.log("[Signup] Email signup successful for:", formData.email);
       
@@ -139,7 +131,6 @@ function Signup() {
           confirmPassword: ""
       });
 
-      // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -152,75 +143,83 @@ function Signup() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Create Account</h2>
+    <div className="signup-page">
+      
+      <div className="signup-left">
+        <div className="overlay">
+          <h1>Join Our Platform</h1>
+          <p>Start tracking time efficiently</p>
+          <span>Create your account and boost your productivity</span>
+        </div>
+      </div>
 
-        {errorMessage && (
-            <div className="error-message">
-                {errorMessage}
-            </div>
-        )}
+      <div className="signup-right">
+        <div className="signup-content">
+          <p className="small-text">Create your account</p>
+          <h2>Get Started</h2>
+          <p className="subtitle">
+            Fill in your details to create an account
+          </p>
 
-        {successMessage && (
+          {errorMessage && (
+            <div className="error-message">{errorMessage}</div>
+          )}
+
+          {successMessage && (
             <div className="success-message">
-                {successMessage} Redirecting to login...
+              {successMessage} Redirecting to login...
             </div>
-        )}
-        
-        <form onSubmit={handleSubmit}>
-          <label>Name</label>
-            <input 
-              name="name" 
-              placeholder="Enter your first name" 
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <label>Name</label>
+            <input
+              name="name"
+              placeholder="Enter your name"
               value={formData.name}
-              onChange={ handleChange }
+              onChange={handleChange}
               disabled={isLoading}
             />
 
             <label>Surname</label>
-            <input 
-              name="surname" 
-              placeholder="Enter your surname" 
+            <input
+              name="surname"
+              placeholder="Enter your surname"
               value={formData.surname}
-              onChange={ handleChange }
+              onChange={handleChange}
               disabled={isLoading}
             />
 
-            <label>Email</label>
-            <input 
-              name="email" 
-              placeholder="Enter your email" 
+            <label>Email address</label>
+            <input
+              name="email"
+              placeholder="Enter your email"
               value={formData.email}
-              onChange={ handleChange }
+              onChange={handleChange}
               disabled={isLoading}
             />
 
             <label>Password</label>
-            <input 
+            <input
               type="password"
-              name="password" 
-              placeholder="Enter your password" 
+              name="password"
+              placeholder="Create a password"
               value={formData.password}
-              onChange={ handleChange }
+              onChange={handleChange}
               disabled={isLoading}
             />
 
             <label>Confirm Password</label>
-            <input 
+            <input
               type="password"
-              name="confirmPassword" 
-              placeholder="Confirm your password" 
+              name="confirmPassword"
+              placeholder="Confirm your password"
               value={formData.confirmPassword}
-              onChange={ handleChange }
+              onChange={handleChange}
               disabled={isLoading}
             />
 
-            <button 
-              className="primary-btn" 
-              type="submit"
-              disabled={isLoading}
-            >
+            <button className="primary-btn" type="submit" disabled={isLoading}>
               {isLoading ? "Creating Account..." : "Create Account"}
             </button>
 
@@ -230,13 +229,14 @@ function Signup() {
               onClick={handleMicrosoftRegister}
               disabled={isMicrosoftLoading}
             >
-              {isMicrosoftLoading ? "Redirecting to Microsoft..." : "Register with Microsoft"}
+              Register with Microsoft
             </button>
 
-            <p className="auth-footer">
+            <p className="bottom-text">
               Already have an account? <Link to="/login">Login here</Link>
             </p>
           </form>
+        </div>
       </div>
     </div>
   );

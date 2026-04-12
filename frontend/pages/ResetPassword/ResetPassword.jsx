@@ -57,39 +57,53 @@ function ResetPassword() {
   };
 
   return (
-    <div className="auth-page">
+    <div className="reset-page">
 
-      <div className="auth-card">
-
-        <h2>Reset Password</h2>
-
-        <div className="info-box">
-          Enter your email address and we'll send you a link to reset your password.
+      <div className="reset-left">
+        <div className="overlay">
+          <h1>Password Recovery</h1>
+          <p>Regain access to your account</p>
+          <span>We’ll help you reset your password securely</span>
         </div>
+      </div>
 
-        {error && <p className="error">{error}</p>}
-        {success && <p className="success">{success}</p>}
+      <div className="reset-right">
+        <div className="reset-content">
 
-        <label>Email</label>
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          <span className="small-text">Forgot your password?</span>
+          <h2>Reset Password</h2>
+          <p className="subtitle">
+            No worries, we'll send you reset instructions
+          </p>
 
-        <button
-          className="primary-btn"
-          onClick={handleResetPassword}
-          disabled={loading}
-        >
-          {loading ? 'Sending...' : 'Send Reset Link'}
-        </button>
+          <div className="info-box">
+            Enter your email and we will send you a reset link.
+          </div>
 
-        <Link className="back-link" to="/login">
-          Back to Login
-        </Link>
+          {error && <p className="error">{error}</p>}
+          {success && <p className="success">{success}</p>}
 
+          <label>Email address</label>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <button
+            className="primary-btn"
+            onClick={handleResetPassword}
+            disabled={loading}
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+
+          <Link to="/login" className="back-link">
+            ← Back to Login
+          </Link>
+
+        </div>
       </div>
     </div>
   );

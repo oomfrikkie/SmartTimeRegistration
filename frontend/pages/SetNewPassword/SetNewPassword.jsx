@@ -77,47 +77,54 @@ function SetNewPassword() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Set New Password</h2>
-
-        <div className="info-box">
-          Enter your new password below.
+    <div className="reset-page">
+      <div className="reset-left">
+        <div className="overlay">
+          <h1>Set New Password</h1>
+          <p>Secure your account</p>
         </div>
+      </div>
 
-        {error && <p className="error">{error}</p>}
-        {success && <p className="success">{success}</p>}
+      <div className="reset-right">
+        <div className="reset-content">
 
-        <label>New Password</label>
-        <input
-          type="password"
-          placeholder="Enter new password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <span className="small-text">Create new password</span>
+          <h2>Set New Password</h2>
 
-        <label>Confirm New Password</label>
-        <input
-          type="password"
-          placeholder="Confirm new password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
+          <div className="info-box">
+            Enter your new password below.
+          </div>
 
-        <button
-          className="primary-btn"
-          onClick={handleSetNewPassword}
-          disabled={loading || !token}
-        >
-          {loading ? 'Setting Password...' : 'Set New Password'}
-        </button>
+          {error && <p className="error">{error}</p>}
+          {success && <p className="success">{success}</p>}
 
-        <button
-          className="secondary-btn"
-          onClick={() => navigate('/login')}
-        >
-          Back to Login
-        </button>
+          <label>New Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <label>Confirm Password</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+
+          <button
+            className="primary-btn"
+            onClick={handleSetNewPassword}
+            disabled={loading || !token}
+          >
+            {loading ? "Setting..." : "Set New Password"}
+          </button>
+
+          <button className="secondary-btn" onClick={() => navigate("/login")}>
+            Back to Login
+          </button>
+
+        </div>
       </div>
     </div>
   );
