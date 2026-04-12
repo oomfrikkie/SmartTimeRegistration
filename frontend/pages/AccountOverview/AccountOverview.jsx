@@ -109,12 +109,12 @@ export default function AccountOverview() {
                 </div>
 
                 <div className="buttons">
-                    <button className="reset-password" onClick={() => navigate('/reset-password')}>
+                    <button className="reset-password-btn" onClick={() => navigate('/reset-password')}>
                         <IoLockClosedOutline className="button-icon" />
                         <div className="desc">Change Password</div>
                     </button>
 
-                    <button className="log-out" 
+                    <button className="log-out-btn" 
                     onClick={handleLogout}
                     >
                         <CiLogout className="button-icon" />
