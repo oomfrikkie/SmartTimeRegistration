@@ -85,6 +85,10 @@ body {
     margin-bottom: 1rem;
 }
 
+.buttons .desc {
+    margin-top: 1.5rem;
+}
+
 .personal-information .reset-password-btn {
     width: 15%;
 }
