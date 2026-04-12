@@ -142,6 +142,12 @@
     margin-bottom: 1.2rem;
 }
 
+.member-hourglass-icon {
+    font-size: large;
+    stroke-width: 3%;
+    margin-left: -0.1rem;
+}
+
 .btn-view-overview {
     width: 100%;
     padding: 0.7rem;

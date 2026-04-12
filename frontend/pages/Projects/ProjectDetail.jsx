@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { GoHourglass } from "react-icons/go";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { getUserFromToken, getAuthHeaders } from "../../src/utils/auth";
@@ -127,6 +128,7 @@ if (!res.ok) {
       name: member.account?.name || member.account?.email || "Unknown",
       role: member.roles || "member",
       totalHours: 0,
+      assignedHours: member.assigned_hours,
       events: [],
     }));
 
@@ -275,7 +277,12 @@ if (!res.ok) {
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <span>{Math.round((member.totalHours || 0) * 10) / 10} hours</span>
+                <span>{member.totalHours} hours logged out of {member.assignedHours} assigned hours</span>
+              </div>
+
+              <div className="member-hours">
+                <GoHourglass className="member-hourglass-icon"/>
+                <span>{Math.floor(member.assignedHours) - Math.floor(member.totalHours)} hours remaining</span>
               </div>
 
               <button
