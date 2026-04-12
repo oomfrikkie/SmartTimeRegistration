@@ -337,11 +337,12 @@ export default function Home() {
         </div>
         <img
           className="hero-bars-img"
-          src="/WhatsApp Image 2026-04-12 at 00.15.10.jpeg"
+          src="../src/assets/header_pattern.png"
           alt=""
         />
       </div>
 
+      <div className="container">
       {/* Stat Cards */}
       <div className="stats-grid">
         <div className="stat-card">
@@ -511,7 +512,7 @@ export default function Home() {
       {/* Projects Widget - Full Width */}
       <div className="projects-widget-card">
         <div className="projects-widget-header">
-          <h3>Your Projects</h3>
+          <h3 className="your-projects">Your Projects</h3>
           <button
             className="projects-widget-btn-create"
             onClick={() => navigate("/projects/create")}
@@ -614,10 +615,8 @@ export default function Home() {
                 ))
               )}
             </div>
-            {sortedEvents.length > 0 && (
-              <button className="btn-view-all">View Full Calendar →</button>
-            )}
           </div>
+        </div>
     </div>
   );
 }
@@ -638,7 +637,10 @@ function getISOWeek(dateStr) {
 }
 
 function formatDateDutch(dateStr) {
-  const months = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+  const months = ["januari", "februari", "maart", 
+                  "april", "mei", "juni", "juli", 
+                  "augustus", "september", "oktober", 
+                  "november", "december"];
   const d = new Date(dateStr);
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
