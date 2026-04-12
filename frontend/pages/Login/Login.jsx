@@ -103,7 +103,7 @@ function Login() {
       </div>
 
       <div className="login-right">
-        <div className="login-card">
+        <div className="login-content">
           <p className="subtitle">Login your account</p>
           <h2>Welcome Back!</h2>
           <p className="desc">Enter your email and password</p>
