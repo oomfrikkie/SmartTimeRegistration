@@ -70,19 +70,28 @@ function Signup() {
       return;
     }
 
+    // Input validation for name and surname
+    const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+    if (!usernameRegex.test(formData.name) || !usernameRegex.test(formData.surname)) {
+      setErrorMessage("Name and surname can only contain letters, numbers, and underscores");
+      return false;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setErrorMessage("Please enter a valid email address");
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Passwords do not match");
+    // Password format validation
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setErrorMessage("Your password must be at least 6 characters and contain at least 1 uppercase letter, 1 number, and 1 special character.");
       return;
     }
 
-    if (formData.password.length < 6) {
-      setErrorMessage("Password must be at least 6 characters");
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Passwords do not match");
       return;
     }
 

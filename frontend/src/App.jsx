@@ -12,6 +12,7 @@ import Projects from '../pages/Projects/Projects.jsx'
 import ProjectDetail from '../pages/Projects/ProjectDetail.jsx'
 import CreateProject from '../pages/CreateProject/CreateProject.jsx'
 import AccountOverview from "../pages/AccountOverview/AccountOverview.jsx";
+import ProtectedRoute from "./ProtectedRoute.jsx";
 
 const AUTH_ROUTES = ["/login", "/signup",
   "/reset-password", "/set-new-password"];
@@ -30,18 +31,63 @@ function App() {
       )}
 
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/account" element={<AccountOverview />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/set-new-password" element={<SetNewPassword />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/create" element={<CreateProject />} />
-        <Route path="/projects/:projectId/:name" element={<ProjectDetail />} />
-        <Route path="/test" element={<Test />} />
-        <Route path="/account" element={<AccountOverview />} />
+        <Route path="/login" element={<Login />}/>
+        <Route path="/signup" element={<Signup />}/>
+
+        <Route path="/account" element={
+          <ProtectedRoute>
+            <AccountOverview />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/reset-password" element={
+          <ProtectedRoute>
+            <ResetPassword />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/set-new-password" element={
+          <ProtectedRoute>
+            <SetNewPassword />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/projects" element={
+          <ProtectedRoute>
+            <Projects />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/projects/create" element={
+          <ProtectedRoute>
+            <CreateProject />
+          </ProtectedRoute>
+        }/>
+        
+        <Route path="/projects/:projectId/:name" element={
+          <ProtectedRoute>
+            <ProjectDetail />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/test" element={
+          <ProtectedRoute>
+            <Test />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/account" element={
+          <ProtectedRoute>
+            <AccountOverview />
+          </ProtectedRoute>
+        }/>
       </Routes>
     </section>
     </ErrorBoundary>

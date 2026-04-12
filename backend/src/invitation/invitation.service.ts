@@ -89,8 +89,8 @@ async getPendingForUser(userId: number) {
 
     // Add to project members as EMPLOYEE, include assigned_hours
     const member = this.memberRepo.create({
-      project: invitation.project,
-      account: invitation.invitee,
+      project_id: invitation.project.id,
+      account_id: invitation.invitee.id,
       roles: ProjectMemberRole.EMPLOYEE,
       assigned_hours: invitation.assigned_hours ?? undefined,
     });
