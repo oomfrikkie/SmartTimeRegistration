@@ -91,23 +91,6 @@
   opacity: 0.9;
 }
 
-.login-card input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--color-text-primary);
-  transition: 0.2s;
-}
-
-.login-card input:focus {
-  outline: none;
-  border: 1px solid var(--color-primary);
-}
-
 .forgot {
   display: block;
   text-align: right;
@@ -170,8 +153,8 @@
 }
 
 .error {
-  background: rgba(255, 0, 0, 0.15);
-  color: #ffb3b3;
+  background: #ffe5e5;
+  color: #ffb4b3;
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 15px;

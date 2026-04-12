@@ -137,8 +137,8 @@
 }
 
 .error-message {
-  background: #ffe5e5;
-  color: red;
+  background: #a82121;
+  color: #ffb4b4;
   padding: 0.625rem;
   border-radius: 0.375rem;
   margin-bottom: 0.9375rem;
