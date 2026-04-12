@@ -163,10 +163,10 @@ function Signup() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <label>Full Name</label>
+            <label>Name</label>
             <input
               name="name"
-              placeholder="Enter your full name"
+              placeholder="Enter your name"
               value={formData.name}
               onChange={handleChange}
               disabled={isLoading}
