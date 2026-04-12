@@ -254,13 +254,13 @@ export default function Home() {
     const wsData = [
       ["Konnect", "", "", "", "Paraaf werknemer"],
       ["", "", "", "", ""],
-      ["Urenadministratie", "", "", "", "Paraaf verantwoordelijke"],
+      ["Uren administratie", "", "", "", "Paraaf verantwoordelijke"],
       [],
-      ["Contactpersoon:", contactName],
+      ["Contact persoon:", contactName],
       ["Periode:", periodeStr],
       ["Jaar:", String(jaar)],
       [],
-      ["Datum", "Werkzaamheden", "Werkpakket", "Uren\nIn rekening"],
+      ["Datum", "Werkzaamheden", "Werkpakket", "Uren In rekening"],
     ];
 
     sortedEvents.forEach((e) => {
