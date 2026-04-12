@@ -23,14 +23,32 @@ export class ImportService {
     const component = new ICAL.Component(parsed);
     const events = component.getAllSubcomponents('vevent');
 
-    const filterStart = new Date(`${String(start_date)}T00:00:00`);
-    const filterEnd = new Date(`${String(end_date)}T23:59:59.999`);
+    // Accept both string and Date input, ensure valid Date objects
+    const filterStart = new Date(start_date);
+    const filterEnd = new Date(end_date);
+    filterStart.setHours(0, 0, 0, 0);
+    filterEnd.setHours(23, 59, 59, 999);
+    if (isNaN(filterStart.getTime())) {
+      console.log('Invalid filterStart:', start_date, filterStart);
+    } else {
+      console.log('Filter Start:', filterStart.toISOString());
+    }
+    if (isNaN(filterEnd.getTime())) {
+      console.log('Invalid filterEnd:', end_date, filterEnd);
+    } else {
+      console.log('Filter End:', filterEnd.toISOString());
+    }
 
     const filtered = events
       .filter((event) => {
         const vevent = new ICAL.Event(event);
         const eventDate = vevent.startDate.toJSDate();
-
+        if (isNaN(eventDate.getTime())) {
+          console.log('Invalid event date:', vevent.summary, vevent.startDate, eventDate);
+          return false;
+        } else {
+          console.log('Event summary:', vevent.summary, '| Event date:', eventDate.toISOString());
+        }
         return eventDate >= filterStart && eventDate <= filterEnd;
       })
       .map((event) => {
