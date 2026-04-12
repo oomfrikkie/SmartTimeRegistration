@@ -34,16 +34,11 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />}/>
         <Route path="/signup" element={<Signup />}/>
+        <Route path="/reset-password" element={<ResetPassword />}/>
 
         <Route path="/account" element={
           <ProtectedRoute>
             <AccountOverview />
-          </ProtectedRoute>
-        }/>
-
-        <Route path="/reset-password" element={
-          <ProtectedRoute>
-            <ResetPassword />
           </ProtectedRoute>
         }/>
 
