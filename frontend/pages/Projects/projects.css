@@ -109,6 +109,11 @@
     margin: 0 0 1.5rem 0;
 }
 
+.hourglass-icon {
+    font-size: larger;
+    stroke-width: 0.1rem;
+}
+
 .projects-loading {
     color: #6b7280;
     font-size: 1rem;

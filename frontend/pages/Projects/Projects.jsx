@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaRegCalendarAlt } from "react-icons/fa";
+import { GoHourglass } from "react-icons/go";
 import { getUserFromToken, getAuthHeaders } from "../../src/utils/auth";
 import "./projects.css";
 
@@ -40,7 +42,10 @@ export default function Projects() {
         id: project.id,
         name: project.name || "Unnamed Project",
         memberCount: project.members ? project.members.length : 0,
-        totalHours: 0,
+        totalHoursLogged: 0,
+        totalHours: project.total_hours,
+        startDate: project.start_date,
+        endDate: project.end_date,
       }));
 
       setProjects(projectList);
@@ -105,6 +110,11 @@ export default function Projects() {
               </div>
 
               <div className="project-detail">
+                <FaRegCalendarAlt />
+                <span>{project.startDate.split('-').reverse().join('/')} to {project.endDate.split('-').reverse().join('/')}</span>
+              </div>
+
+              <div className="project-detail">
                 <svg
                   width="18"
                   height="18"
@@ -118,7 +128,12 @@ export default function Projects() {
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <span>{project.totalHours} hours logged</span>
+                <span>{project.totalHoursLogged} hours logged out of {Math.floor(project.totalHours)} total</span>
+              </div>
+
+              <div className="project-detail">
+                <GoHourglass className="hourglass-icon"/>
+                <span>{Math.floor(project.totalHours) - Math.floor(project.totalHoursLogged)} hours remaining</span>
               </div>
 
               <button
