@@ -20,7 +20,7 @@ function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("Please enter your email and password.");
+      setError("Please enter your email or password.");
       return;
     }
 
@@ -92,63 +92,65 @@ function Login() {
 };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Smart Time Registration</h2>
+    <div className="login-page">
 
-        {error && (
-          <p
-            className="error"
-            style={{
-              color: "red",
-              padding: "10px",
-              background: "#ffeeee",
-              borderRadius: "4px",
-            }}
+      <div className="login-left">
+        <div className="overlay">
+          <h1>Smart Time Registration</h1>
+          <p>Anything you can imagine</p>
+          <span>Professional time tracking for modern IT teams</span>
+        </div>
+      </div>
+
+      <div className="login-right">
+        <div className="login-card">
+          <p className="subtitle">Login your account</p>
+          <h2>Welcome Back!</h2>
+          <p className="desc">Enter your email and password</p>
+
+          {error && <p className="error">{error}</p>}
+
+          <label>Email address</label>
+          <input
+            type="email"
+            placeholder="hello@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+          />
+
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+          />
+
+          <Link to="/reset-password" className="forgot">
+            Forgot Password?
+          </Link>
+
+          <button
+            className="primary-btn"
+            onClick={handleLogin}
+            disabled={isLoading}
           >
-            {error}
+            {isLoading ? "Logging in..." : "Sign in"}
+          </button>
+
+          <button
+            className="microsoft-btn"
+            onClick={handleMicrosoftLogin}
+            disabled={isLoading}
+          >
+            Sign in with Microsoft
+          </button>
+
+          <p className="bottom-text">
+            Don't have an account? <Link to="/signup">Sign up</Link>
           </p>
-        )}
-
-        <label>Email</label>
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
-        />
-
-        <label>Password</label>
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
-        />
-
-        <button
-          className="microsoft-btn"
-          type="button"
-          disabled={isLoading}
-          onClick={handleMicrosoftLogin}
-        >
-          Sign in with Microsoft
-        </button>
-
-        <button
-          className="primary-btn"
-          type="button"
-          onClick={handleLogin}
-          disabled={isLoading}
-        >
-          {isLoading ? "Logging in..." : "Login"}
-        </button>
-
-        <div className="auth-links">
-          <Link to="/reset-password">Forgot password?</Link>
-          <Link to="/signup">Sign up</Link>
         </div>
       </div>
     </div>
