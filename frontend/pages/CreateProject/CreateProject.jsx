@@ -97,37 +97,25 @@ function CreateProject() {
         return;
       }
 
-      const project = await projectRes.json();
+      const { project } = await projectRes.json();
       
-      await fetch("http://localhost:3000/projectmember", {
+      // 2. Send invitations to selected members
+      const inviteRes = await fetch("http://localhost:3000/invitation/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...getAuthHeaders()
         },
+        credentials: "include",
         body: JSON.stringify({
-          projectId: project.id,
-          members: selectedMembers.map((m) => ({
-            accountId: m.id,
-            assigned_hours: m.assignedHours
+          projectId: Number(project.id),
+          invitees: selectedMembers.map((m) => ({
+            id: m.id,
+            assigned_hours: m.assignedHours,
           })),
         }),
       });
-
-
-      // 2. Send invitations to selected members
-      await fetch("http://localhost:3000/invitation/send", {
-        method: "POST",
-        headers: getAuthHeaders(),
-        credentials: "include",
-        body: JSON.stringify({
-          name: projectName,
-          account_id: user.id,
-          start_date: startDate,
-          end_date: endDate,
-          total_hours: totalHours,
-        }),
-      });
+      console.log("invite status:", inviteRes.status, await inviteRes.clone().text());
 
       setProjectName("");
       setSelectedMembers([]);
@@ -147,8 +135,7 @@ function CreateProject() {
   );
 
   const isHoursValid =
-    parseFloat(totalHours) > 0 &&
-    Math.abs(totalAssigned - parseFloat(totalHours)) < 0.01;
+    totalHours > 0;
   
   const isDateValid =
     startDate && endDate && new Date(endDate) >= new Date(startDate);
