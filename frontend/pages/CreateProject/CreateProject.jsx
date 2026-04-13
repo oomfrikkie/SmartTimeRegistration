@@ -109,6 +109,11 @@ function CreateProject() {
 
   return (
     <div className="create-project-page">
+      <div>
+          <button className="btn-back" onClick={() => navigate("/projects")}>
+            &larr; Back to Projects
+          </button>
+      </div>
 
       <h1>Create New Project</h1>
       <p className="subtitle">

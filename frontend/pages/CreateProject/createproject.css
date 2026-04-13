@@ -79,6 +79,14 @@ button {
   padding: 0;
 }
 
+.btn-back {
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 16px;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
 /* Create button */
 .create-btn {
   width: 100%;
