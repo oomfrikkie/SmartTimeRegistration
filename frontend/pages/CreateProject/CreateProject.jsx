@@ -12,6 +12,9 @@ function CreateProject() {
   const [search, setSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [creating, setCreating] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [totalHours, setTotalHours] = useState("");
 
   useEffect(() => {
     fetchUsers();
@@ -52,6 +55,16 @@ function CreateProject() {
     setSelectedMembers(prev => prev.filter(m => m.id !== id));
   };
 
+  const updateMemberHours = (id, value) => {
+    const hours = parseFloat(value) || 0;
+
+    setSelectedMembers(prev =>
+      prev.map(m =>
+        m.id === id ? { ...m, assignedHours: hours } : m
+      )
+    );
+  };
+
   // Create project
   const handleCreateProject = async () => {
     if (!projectName || selectedMembers.length === 0) return;
@@ -65,9 +78,17 @@ function CreateProject() {
       // 1. Create the project
       const projectRes = await fetch("http://localhost:3000/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders()
+        },
         credentials: "include",
-        body: JSON.stringify({ name: projectName, account_id: user.id }),
+        body: JSON.stringify({
+          name: projectName,
+          total_hours: parseFloat(totalHours),
+          start_date: startDate,
+          end_date: endDate,
+        }),
       });
 
       if (!projectRes.ok) {
@@ -76,9 +97,21 @@ function CreateProject() {
       }
 
       const project = await projectRes.json();
-      console.log("project response:", project);
-      console.log("project id:", project.id);
-      console.log("inviteeIds:", selectedMembers.map((m) => m.id));
+      
+      await fetch("http://localhost:3000/projectmember", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify({
+          projectId: project.id,
+          members: selectedMembers.map((m) => ({
+            accountId: m.id,
+            assigned_hours: m.assignedHours
+          })),
+        }),
+      });
 
 
       // 2. Send invitations to selected members
@@ -87,8 +120,11 @@ function CreateProject() {
         headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify({
-          projectId: project.id,
-          inviteeIds: selectedMembers.map((m) => m.id),
+          name: projectName,
+          account_id: user.id,
+          start_date: startDate,
+          end_date: endDate,
+          total_hours: totalHours,
         }),
       });
 
@@ -104,8 +140,25 @@ function CreateProject() {
     }
   };
 
-  // Disable create button if no name or members
-  const isDisabled = !projectName.trim() || selectedMembers.length === 0;
+  const totalAssigned = selectedMembers.reduce(
+    (sum, m) => sum + (m.assignedHours || 0),
+    0
+  );
+
+  const isHoursValid =
+    totalAssigned === parseFloat(totalHours) &&
+    parseFloat(totalHours) > 0;
+  
+  const isDateValid =
+    startDate && endDate && new Date(endDate) >= new Date(startDate);
+
+  const isDisabled =
+    !projectName.trim() ||
+    selectedMembers.length === 0 ||
+    !isHoursValid ||
+    !isDateValid ||
+    !startDate ||
+    !endDate;
 
   return (
     <div className="create-project-page">
@@ -128,6 +181,28 @@ function CreateProject() {
           placeholder="Enter project name"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
+        />
+
+        <label>Start Date</label>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+
+        <label>End Date</label>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+
+        <label>Total Project Hours</label>
+        <input
+          type="number"
+          placeholder="Enter total hours"
+          value={totalHours}
+          onChange={(e) => setTotalHours(e.target.value)}
         />
       </div>
 
@@ -173,11 +248,19 @@ function CreateProject() {
                 <div>
                   <p>{member.name}</p>
                   <span>{member.email}</span>
+
+                  <input
+                    type="number"
+                    placeholder="Assigned hours"
+                    value={member.assignedHours || ""}
+                    onChange={(e) => updateMemberHours(member.id, e.target.value)}
+                  />
                 </div>
 
                 <button className="btn-delete" onClick={() => removeMember(member.id)}>
                   ✕
                 </button>
+                
               </div>
             ))
           )}
