@@ -146,7 +146,8 @@ function CreateProject() {
     !isHoursValid ||
     !isDateValid ||
     !startDate ||
-    !endDate;
+    !endDate ||
+    !totalAssigned;
 
   console.log("isDisabled debug", {
     projectName: projectName.trim(),
