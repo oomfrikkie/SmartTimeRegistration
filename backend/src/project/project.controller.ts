@@ -53,11 +53,18 @@ export class ProjectController {
     return this.projectService.deleteProject(project_id, account_id);
   }
 
-  
   @Patch(':project_id/complete')
   async completeProject(
     @Param('project_id', ParseIntPipe) project_id: number,
   ) {
     return this.projectService.completeProject(project_id);
+  }
+
+  @Get(':project_id/member-hours')
+  async getProjectMemberHours(
+    @Param('project_id', ParseIntPipe) project_id: number,
+    @Query('account_id', ParseIntPipe) account_id: number,
+  ) {
+    return this.projectService.getProjectMemberHours(account_id, project_id);
   }
 }

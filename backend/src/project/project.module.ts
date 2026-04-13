@@ -7,10 +7,12 @@ import { Account } from '../account/account.entity';
 
 import { ProjectService } from './project.service';
 import { ProjectController } from './project.controller';
+import { EventModule } from '../event/event.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Project, ProjectMember, Account]),
+    EventModule,
   ],
   controllers: [ProjectController],
   providers: [ProjectService],

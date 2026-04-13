@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { Project } from './project.entity';
 import { ProjectMember } from 'src/projectmember/projectmember.entity';
@@ -8,9 +8,9 @@ import { Account } from '../account/account.entity';
 import { CreateProjectDto } from './dto-project/create-project.dto';
 import { ProjectMemberRole } from 'src/projectmember/enum/projectmember.enum';
 import { AddUserDto } from './dto-project/add-user.dto';
-
 import { ProjectStatus } from './project.entity';
-
+import { EventService } from '../event/event.service';
+import { TextFilterEventDto } from '../event/dto-event/text-filter-event.dto';
 
 @Injectable()
 export class ProjectService {
@@ -23,10 +23,11 @@ export class ProjectService {
 
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
+
+    private readonly eventService: EventService,
   ) {}
 
   async create(dto: CreateProjectDto): Promise<{ message: string; project: Project }> {
-    // 1. check if account exists
     const account = await this.accountRepo.findOne({
       where: { id: dto.account_id },
     });
@@ -35,16 +36,16 @@ export class ProjectService {
       throw new NotFoundException(`Account with id ${dto.account_id} not found`);
     }
 
-    // 2. create project
     const project = this.projectRepo.create({
       name: dto.name,
       status: dto.status || ProjectStatus.ONGOING,
-      total_hours: dto.total_hours
+      total_hours: dto.total_hours,
     });
 
     if (dto.start_date) {
       project.start_date = new Date(dto.start_date);
     }
+
     if (dto.end_date) {
       project.end_date = new Date(dto.end_date);
     }
@@ -55,7 +56,6 @@ export class ProjectService {
 
     const savedProject = await this.projectRepo.save(project);
 
-    // 3. add creator as admin in project_members
     const projectMember = this.projectMemberRepo.create({
       project_id: savedProject.id,
       account_id: dto.account_id,
@@ -64,7 +64,6 @@ export class ProjectService {
 
     await this.projectMemberRepo.save(projectMember);
 
-    // 4. return response
     return {
       message: 'Project created successfully',
       project: savedProject,
@@ -86,21 +85,19 @@ export class ProjectService {
       throw new NotFoundException(`Account with id ${account_id} not found`);
     }
 
-  // Step 1: find project IDs where account is a member
-  const memberRecords = await this.projectMemberRepo.find({
-    where: { account_id: account_id },
-  });
+    const memberRecords = await this.projectMemberRepo.find({
+      where: { account_id: account_id },
+    });
 
-  const projectIds = memberRecords.map(m => m.project_id);
+    const projectIds = memberRecords.map((m) => m.project_id);
 
-  if (projectIds.length === 0) return [];
+    if (projectIds.length === 0) return [];
 
-  // Step 2: fetch those projects with ALL members loaded
-  return this.projectRepo.find({
-    where: { id: In(projectIds) },
-    relations: ['members', 'members.account'],
-  });
-}
+    return this.projectRepo.find({
+      where: { id: In(projectIds) },
+      relations: ['members', 'members.account'],
+    });
+  }
 
   async getProjectMembers(project_id: number): Promise<ProjectMember[]> {
     const project = await this.projectRepo.findOne({
@@ -124,20 +121,20 @@ export class ProjectService {
   async getMyRoleInProject(project_id: number, account_id: number) {
     const role = await this.projectMemberRepo.findOne({
       where: {
-        project: {id: project_id},
-        account: {id: account_id}
+        project: { id: project_id },
+        account: { id: account_id },
       },
       relations: ['project', 'account'],
     });
 
-    if(!role){
-      throw new NotFoundException("User cannot be found in the current project");
+    if (!role) {
+      throw new NotFoundException('User cannot be found in the current project');
     }
 
     return {
       role: role.roles,
       isAdmin: role.roles.toLowerCase() === 'admin',
-    }
+    };
   }
 
   async addUserToProject(dto: AddUserDto) {
@@ -198,63 +195,99 @@ export class ProjectService {
     };
   }
 
-  async deleteProject(project_id: number, account_id: number){
+  async deleteProject(project_id: number, account_id: number) {
     const project = await this.projectRepo.findOne({
-      where: {id: project_id}
+      where: { id: project_id },
     });
 
-    if(!project){
-      throw new NotFoundException("Project cannot be found");
+    if (!project) {
+      throw new NotFoundException('Project cannot be found');
     }
 
     const account = await this.accountRepo.findOne({
-      where: {id: account_id}
-    })
+      where: { id: account_id },
+    });
 
-    if (!account){
-      throw new NotFoundException("Account cannot be found");
+    if (!account) {
+      throw new NotFoundException('Account cannot be found');
     }
 
     const role = await this.getMyRoleInProject(project_id, account_id);
 
-    if(!role.isAdmin){
-      throw new ForbiddenException("Only project admins may delete the project");
+    if (!role.isAdmin) {
+      throw new ForbiddenException('Only project admins may delete the project');
     }
 
     const deletedProject = {
       id: project.id,
-      name: project.name
-    }
+      name: project.name,
+    };
 
-     await this.projectMemberRepo.delete({ project_id: project_id });
-  await this.projectRepo.delete({ id: project_id });
+    await this.projectMemberRepo.delete({ project_id: project_id });
+    await this.projectRepo.delete({ id: project_id });
 
     return {
-      message: "Project deleted successfully",
+      message: 'Project deleted successfully',
       project: deletedProject,
-    }
+    };
   }
 
-  async completeProject(project_id: number){
+  async completeProject(project_id: number) {
     const project = await this.projectRepo.findOne({
-      where: {id: project_id}
-    })
+      where: { id: project_id },
+    });
 
-    if(!project){
-      throw new NotFoundException("Project cannot be found");
+    if (!project) {
+      throw new NotFoundException('Project cannot be found');
     }
 
     project.status = ProjectStatus.COMPLETED;
 
-    const updatedProject = await this.projectRepo.save(project)
+    const updatedProject = await this.projectRepo.save(project);
 
-    return{
-      message: "Project completed and is now updated",
+    return {
+      message: 'Project completed and is now updated',
       project: {
         id: updatedProject.id,
         name: updatedProject.name,
         status: updatedProject.status,
-      }
+      },
+    };
+  }
+
+  async getProjectMemberHours(account_id: number, project_id: number) {
+    const project = await this.projectRepo.findOne({
+      where: { id: project_id },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project cannot be found');
     }
+
+    const account = await this.accountRepo.findOne({
+      where: { id: account_id },
+    });
+
+    if (!account) {
+      throw new NotFoundException('Account cannot be found');
+    }
+
+    // Use project.name as the filter for events
+    const filterDto = {
+      account_id,
+      project_name: project.name,
+    };
+    const events = await this.eventService.getEventByAccountIdTextFiltered(filterDto);
+    const total_hours = events.reduce(
+      (sum, event) => sum + (typeof event.total_hours === 'number' ? event.total_hours : Number(event.total_hours) || 0),
+      0,
+    );
+
+    return {
+      project_id,
+      account_id,
+      project_name: project.name,
+      total_hours,
+    };
   }
 }

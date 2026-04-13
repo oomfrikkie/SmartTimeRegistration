@@ -14,6 +14,7 @@ export default function ProjectDetail() {
   const [showSummary, setShowSummary] = useState(false);
   const [currentRole, setCurrentRole] = useState("");
   const [userID, setUserID] = useState(null);
+  
 
   // Handler for deleting the project
   const handleDeleteProject = async () => {
@@ -62,6 +63,10 @@ export default function ProjectDetail() {
 useEffect(() => {
   fetchCurrentUsersRole();
 }, [projectId]);
+
+useEffect(() => {
+  
+})
 
 const fetchCurrentUsersRole = async () => {
   try {
@@ -177,6 +182,32 @@ if (!res.ok) {
     const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     saveAs(new Blob([buf]), `${projectName}.xlsx`);
   };
+
+  useEffect(() => {
+    if (!members.length) return;
+    // Fetch total hours for each member
+    const fetchAllMemberHours = async () => {
+      const updatedMembers = await Promise.all(
+        members.map(async (member) => {
+          try {
+            const res = await fetch(
+              `http://localhost:3000/projects/${projectId}/member-hours?account_id=${member.id}`,
+              { headers: getAuthHeaders() }
+            );
+            if (!res.ok) throw new Error("Failed to fetch member hours");
+            const data = await res.json();
+            return { ...member, totalHours: data.total_hours };
+          } catch (err) {
+            console.error(`Error fetching hours for member ${member.id}:`, err);
+            return member;
+          }
+        })
+      );
+      setMembers(updatedMembers);
+    };
+    fetchAllMemberHours();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [members.length, projectId]);
 
   return (
     <div className="project-detail-container">
