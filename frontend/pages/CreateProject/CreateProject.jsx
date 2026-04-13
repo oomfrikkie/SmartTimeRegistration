@@ -11,6 +11,7 @@ function CreateProject() {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -31,25 +32,31 @@ function CreateProject() {
   };
 
   // Filter users (search)
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = users
+    .filter(user =>
     user.name.toLowerCase().includes(search.toLowerCase()) ||
     user.email.toLowerCase().includes(search.toLowerCase())
-  );
+    )
+    .filter(user => !selectedMembers.find(m => m.id === user.id));
 
   // Add member
   const addMember = (user) => {
-    if (selectedMembers.find(m => m.id === user.id)) return;
-    setSelectedMembers([...selectedMembers, user]);
+    setSelectedMembers(prev => {
+      if (prev.find(m => m.id === user.id)) return prev;
+      return [...prev, user];
+    });
   };
 
   // Remove member
   const removeMember = (id) => {
-    setSelectedMembers(selectedMembers.filter(m => m.id !== id));
+    setSelectedMembers(prev => prev.filter(m => m.id !== id));
   };
 
   // Create project
   const handleCreateProject = async () => {
     if (!projectName || selectedMembers.length === 0) return;
+
+    setCreating(true);
 
     try {
       const user = getUserFromToken();
@@ -80,14 +87,20 @@ function CreateProject() {
         headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify({
-          projectId: project.project.id,
+          projectId: project.id,
           inviteeIds: selectedMembers.map((m) => m.id),
         }),
       });
 
+      setProjectName("");
+      setSelectedMembers([]);
+      setSearch("");
+
       navigate("/projects");
     } catch (err) {
       console.error("Error creating project:", err);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -157,7 +170,7 @@ function CreateProject() {
                   <span>{member.email}</span>
                 </div>
 
-                <button onClick={() => removeMember(member.id)}>
+                <button className="btn-delete" onClick={() => removeMember(member.id)}>
                   ✕
                 </button>
               </div>
@@ -165,11 +178,11 @@ function CreateProject() {
           )}
 
           <button
-            className={`create-btn ${ isDisabled ? "disabled" : "" }`}
+            className={`create-btn ${isDisabled ? "disabled" : ""}`}
             onClick={handleCreateProject}
-            disabled={isDisabled}
+            disabled={isDisabled || creating}
           >
-            Create Project
+            {creating ? "Creating..." : "Create Project"}
           </button>
         </div>
 

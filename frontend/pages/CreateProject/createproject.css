@@ -35,6 +35,10 @@ input {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+input:focus {
+  border: 0.125rem solid var(--color-primary);
+  outline: none;
+}
 
 /* Users */
 .user-list {
@@ -52,12 +56,27 @@ input {
   background: #ffffff;
 }
 
+.selected-item {
+  background: #FAF5FF;
+  border-radius: 8px;
+  border: 1px solid #E9D5FF;
+}
+
 /* Buttons */
 button {
   padding: 6px 12px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  background: #FF595A;
+  color: var(--color-white);
+}
+
+.btn-delete {
+  background: transparent;
+  color: #ff595a;
+  font-size: 18px;
+  padding: 0;
 }
 
 /* Create button */
@@ -66,6 +85,8 @@ button {
   margin-top: 20px;
   padding: 12px;
   font-weight: bold;
+  background: var(--color-accent);
+  color: var(--color-white);
 }
 
 /* Disabled state */
