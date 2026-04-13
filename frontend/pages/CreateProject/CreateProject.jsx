@@ -85,6 +85,7 @@ function CreateProject() {
         credentials: "include",
         body: JSON.stringify({
           name: projectName,
+          account_id: user.id,
           total_hours: parseFloat(totalHours),
           start_date: startDate,
           end_date: endDate,
@@ -146,8 +147,8 @@ function CreateProject() {
   );
 
   const isHoursValid =
-    totalAssigned === parseFloat(totalHours) &&
-    parseFloat(totalHours) > 0;
+    parseFloat(totalHours) > 0 &&
+    Math.abs(totalAssigned - parseFloat(totalHours)) < 0.01;
   
   const isDateValid =
     startDate && endDate && new Date(endDate) >= new Date(startDate);
@@ -159,6 +160,18 @@ function CreateProject() {
     !isDateValid ||
     !startDate ||
     !endDate;
+
+  console.log("isDisabled debug", {
+    projectName: projectName.trim(),
+    memberCount: selectedMembers.length,
+    totalAssigned,
+    parsedTotalHours: parseFloat(totalHours),
+    diff: Math.abs(totalAssigned - parseFloat(totalHours)),
+    isHoursValid,
+    isDateValid,
+    startDate,
+    endDate,
+  });
 
   return (
     <div className="create-project-page">
