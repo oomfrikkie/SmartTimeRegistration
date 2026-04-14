@@ -25,8 +25,8 @@ describe('Auth Endpoints (e2e)', () => {
         .post('/account/register')
         .send({
           email: 'testuser1@example.com',
-          password: 'TestPassword123',
-          name: 'Test User',
+          password: 'TestPassword123!',
+          name: 'TestUser',
           surname: 'TestSurname',
         });
       if (res.status !== 201) {
@@ -48,15 +48,15 @@ describe('Auth Endpoints (e2e)', () => {
         .post('/account/register')
         .send({
           email: 'testuser2@example.com',
-          password: 'TestPassword123',
-          name: 'Test User2',
-          surname: 'TestSurname2',  
+          password: 'TestPassword123!',
+          name: 'TestUser2',
+          surname: 'TestSurname2',
         });
       const res = await request(app.getHttpServer())
         .post('/account/login')
         .send({
           email: 'testuser2@example.com',
-          password: 'TestPassword123',
+          password: 'TestPassword123!',
         });
       if (res.status !== 200) {
         // Log the response body for debugging
