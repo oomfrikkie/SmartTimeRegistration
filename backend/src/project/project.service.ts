@@ -40,6 +40,8 @@ export class ProjectService {
       name: dto.name,
       status: dto.status || ProjectStatus.ONGOING,
       total_hours: dto.total_hours,
+      budget: dto.budget,
+      subsidy: dto.subsidy
     });
 
     if (dto.start_date) {
@@ -52,6 +54,10 @@ export class ProjectService {
 
     if (project.start_date && project.end_date && project.start_date > project.end_date) {
       throw new BadRequestException('End date cannot be before start date');
+    }
+
+    if (project.budget || project.subsidy < 0) {
+      throw new BadRequestException('The budged and subsidiy cannot be negative values');
     }
 
     const savedProject = await this.projectRepo.save(project);
@@ -185,6 +191,8 @@ export class ProjectService {
         total_hours: project.total_hours,
         start_date: project.start_date,
         end_date: project.end_date,
+        budget: project.budget,
+        subsidy: project.subsidiy,
       },
       account: {
         id: account.id,

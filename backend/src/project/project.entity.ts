@@ -31,11 +31,36 @@ export class Project {
   })
   total_hours: number;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ 
+    type: 'date', 
+    nullable: true 
+  })
   start_date: Date;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ 
+    type: 'date', 
+    nullable: true 
+  })
   end_date: Date;
+
+  // Add budget column
+  @Column({ 
+    type: 'decimal', 
+    precision: 12, 
+    scale: 2,
+    nullable: false,
+    default: 0
+  })
+  budget: number;
+
+  @Column({ 
+    type: 'decimal', 
+    precision: 12, 
+    scale: 2,
+    nullable: false,
+    default: 0
+  })
+  subsidy: number;
 
   // One project → many project members
   @OneToMany(() => ProjectMember, (member) => member.project)
@@ -72,6 +97,18 @@ export class Project {
     
     if (this.status === ProjectStatus.COMPLETED && !this.end_date) {
       throw new Error('Finalized projects must have an end date');
+    }
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  validateFinancials() {
+    if (this.budget < 0) {
+      throw new Error('Budget cannot be negative');
+    }
+    
+    if (this.subsidy < 0) {
+      throw new Error('Subsidy cannot be negative');
     }
   }
 }

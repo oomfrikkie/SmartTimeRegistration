@@ -206,16 +206,16 @@ function CreateProject() {
           onChange={(e) => setTotalHours(e.target.value)}
         />
 
-        <label>Project Budget</label>
+        <label>Project Budget €</label>
         <input
           type="number"
-          placeholder="Enter the budget amount of the project"
+          placeholder="Enter the € budget amount of the project"
         />
 
-        <label>Project Subsidy</label>
+        <label>Project Subsidy €</label>
         <input
           type="number"
-          placeholder="Enter the subsidy amount of the project"
+          placeholder="Enter the € subsidy amount of the project"
         />
 
         <label>Create Work Packages</label>
