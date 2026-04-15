@@ -37,8 +37,8 @@ function CreateProject() {
   // Filter users (search)
   const filteredUsers = users
     .filter(user =>
-    user.name.toLowerCase().includes(search.toLowerCase()) ||
-    user.email.toLowerCase().includes(search.toLowerCase())
+      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      user.email.toLowerCase().includes(search.toLowerCase())
     )
     .filter(user => !selectedMembers.find(m => m.id === user.id));
 
@@ -98,7 +98,7 @@ function CreateProject() {
       }
 
       const { project } = await projectRes.json();
-      
+
       // 2. Send invitations to selected members
       const inviteRes = await fetch("http://localhost:3000/invitation/send", {
         method: "POST",
@@ -136,7 +136,7 @@ function CreateProject() {
 
   const isHoursValid =
     totalHours > 0;
-  
+
   const isDateValid =
     startDate && endDate && new Date(endDate) >= new Date(startDate);
 
@@ -164,9 +164,9 @@ function CreateProject() {
   return (
     <div className="create-project-page">
       <div>
-          <button className="btn-back" onClick={() => navigate("/projects")}>
-            &larr; Back to Projects
-          </button>
+        <button className="btn-back" onClick={() => navigate("/projects")}>
+          &larr; Back to Projects
+        </button>
       </div>
 
       <h1>Create New Project</h1>
@@ -205,6 +205,35 @@ function CreateProject() {
           value={totalHours}
           onChange={(e) => setTotalHours(e.target.value)}
         />
+
+        <label>Project Budget</label>
+        <input
+          type="number"
+          placeholder="Enter the budget amount of the project"
+        />
+
+        <label>Project Subsidy</label>
+        <input
+          type="number"
+          placeholder="Enter the subsidy amount of the project"
+        />
+
+        <label>Create Work Packages</label>
+        <div className="create-work-package">
+          <input
+            type="text"
+            placeholder="Enter the name of this work package"
+            classname="work-package-name"
+          />
+          <input
+            type="number"
+            placeholder="Work package hours"
+            className="work-package-hours"
+          />
+          <button className="submit-work-package">
+            Create
+          </button>
+        </div>
       </div>
 
       {/* Main Section */}
@@ -261,7 +290,7 @@ function CreateProject() {
                 <button className="btn-delete" onClick={() => removeMember(member.id)}>
                   ✕
                 </button>
-                
+
               </div>
             ))
           )}

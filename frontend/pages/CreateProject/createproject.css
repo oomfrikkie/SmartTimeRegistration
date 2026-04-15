@@ -42,9 +42,30 @@ input {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+
 input:focus {
   border: 0.125rem solid var(--color-primary);
   outline: none;
+}
+
+.create-work-package {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.work-package-name {
+  width: 70%;
+}
+
+.work-package-hours {
+  width: 25%;
+}
+
+.submit-work-package {
+  height: 2.5rem;
+  position: relative;
+  top: 0.4rem;
 }
 
 /* Users */
