@@ -89,6 +89,8 @@ function CreateProject() {
           total_hours: parseFloat(totalHours),
           start_date: startDate,
           end_date: endDate,
+          budget: budget,
+          subsidy: subsidy,
         }),
       });
 
