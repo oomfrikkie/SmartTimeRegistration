@@ -19,8 +19,22 @@ export default function ProjectDetail() {
   const [loadingFinancials, setLoadingFinancials] = useState(true);
   const [workPackages, setWorkPackages] = useState([]);
   const [loadingWorkPackages, setLoadingWorkPackages] = useState(true);
+  const [selectedWorkPackage, setSelectedWorkPackage] = useState(null);
+  const [assigningMemberIds, setAssigningMemberIds] = useState([]);
+  const [assignmentError, setAssignmentError] = useState("");
+  const [assignmentSuccess, setAssignmentSuccess] = useState("");
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [availableAccounts, setAvailableAccounts] = useState([]);
+  const [loadingAvailableAccounts, setLoadingAvailableAccounts] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [selectedInvitees, setSelectedInvitees] = useState([]);
+  const [inviteError, setInviteError] = useState("");
+  const [inviteSuccess, setInviteSuccess] = useState("");
+  const [sendingInvitations, setSendingInvitations] = useState(false);
 
   const fetchWorkPackages = async () => {
+    setLoadingWorkPackages(true);
+
     try {
       const res = await fetch(
         `http://localhost:3000/work-packages/project/${projectId}`,
@@ -33,9 +47,11 @@ export default function ProjectDetail() {
       }
       const data = await res.json();
       setWorkPackages(data || []);
+      return data || [];
     } catch (err) {
       console.error("Error fetching work packages:", err);
       setWorkPackages([]);
+      return [];
     } finally {
       setLoadingWorkPackages(false);
     }
@@ -192,6 +208,235 @@ export default function ProjectDetail() {
     0
   );
 
+  const memberIds = new Set(members.map((member) => member.id));
+
+  const inviteableAccounts = availableAccounts.filter((account) => {
+    if (memberIds.has(account.id) || account.id === userID) {
+      return false;
+    }
+
+    const searchValue = inviteSearch.trim().toLowerCase();
+
+    if (!searchValue) {
+      return true;
+    }
+
+    return (
+      account.name.toLowerCase().includes(searchValue) ||
+      account.email.toLowerCase().includes(searchValue)
+    );
+  });
+
+  const fetchAvailableAccounts = async () => {
+    setLoadingAvailableAccounts(true);
+
+    try {
+      const res = await fetch("http://localhost:3000/account/all", {
+        headers: getAuthHeaders(),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch available accounts");
+      }
+
+      const data = await res.json();
+      setAvailableAccounts(data || []);
+    } catch (err) {
+      console.error("Error fetching available accounts:", err);
+      setInviteError(err.message || "Failed to load accounts");
+      setAvailableAccounts([]);
+    } finally {
+      setLoadingAvailableAccounts(false);
+    }
+  };
+
+  const openInviteMembersModal = async () => {
+    setShowInviteModal(true);
+    setInviteError("");
+    setInviteSuccess("");
+    setInviteSearch("");
+    setSelectedInvitees([]);
+    await fetchAvailableAccounts();
+  };
+
+  const closeInviteMembersModal = () => {
+    setShowInviteModal(false);
+    setInviteSearch("");
+    setSelectedInvitees([]);
+    setInviteError("");
+    setInviteSuccess("");
+  };
+
+  const isInviteeSelected = (accountId) => {
+    return selectedInvitees.some((invitee) => invitee.id === accountId);
+  };
+
+  const toggleInvitee = (account) => {
+    setSelectedInvitees((currentInvitees) => {
+      if (currentInvitees.some((invitee) => invitee.id === account.id)) {
+        return currentInvitees.filter((invitee) => invitee.id !== account.id);
+      }
+
+      return [
+        ...currentInvitees,
+        {
+          id: account.id,
+          name: account.name,
+          email: account.email,
+          assignedHours: "",
+        },
+      ];
+    });
+  };
+
+  const updateInviteeAssignedHours = (accountId, value) => {
+    setSelectedInvitees((currentInvitees) =>
+      currentInvitees.map((invitee) =>
+        invitee.id === accountId
+          ? { ...invitee, assignedHours: value }
+          : invitee
+      )
+    );
+  };
+
+  const handleSendInvitations = async () => {
+    if (!selectedInvitees.length) {
+      setInviteError("Select at least one account to invite.");
+      return;
+    }
+
+    setInviteError("");
+    setInviteSuccess("");
+    setSendingInvitations(true);
+
+    try {
+      const res = await fetch("http://localhost:3000/invitation/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          projectId: Number(projectId),
+          invitees: selectedInvitees.map((invitee) => ({
+            id: invitee.id,
+            assigned_hours:
+              invitee.assignedHours === ""
+                ? undefined
+                : Number(invitee.assignedHours),
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        let errorMessage = "Failed to send invitations";
+
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          const errorText = await res.text();
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      const result = await res.json();
+      const sentCount = Array.isArray(result) ? result.length : selectedInvitees.length;
+
+      setInviteSuccess(
+        sentCount === 0
+          ? "No invitations were sent. Those accounts may already be members or already have pending invitations."
+          : `${sentCount} invitation${sentCount === 1 ? "" : "s"} sent successfully.`
+      );
+      setSelectedInvitees([]);
+      await fetchAvailableAccounts();
+    } catch (err) {
+      setInviteError(err.message || "Failed to send invitations");
+    } finally {
+      setSendingInvitations(false);
+    }
+  };
+
+  const closeAssignMembersModal = () => {
+    setSelectedWorkPackage(null);
+    setAssigningMemberIds([]);
+    setAssignmentError("");
+    setAssignmentSuccess("");
+  };
+
+  const openAssignMembersModal = (workPackage) => {
+    setSelectedWorkPackage(workPackage);
+    setAssignmentError("");
+    setAssignmentSuccess("");
+  };
+
+  const isMemberAssignedToWorkPackage = (workPackage, memberId) => {
+    return (workPackage?.assignedMembers || []).some((member) => member.id === memberId);
+  };
+
+  const handleAssignMemberToWorkPackage = async (member) => {
+    if (!selectedWorkPackage) {
+      return;
+    }
+
+    setAssignmentError("");
+    setAssignmentSuccess("");
+    setAssigningMemberIds((currentIds) => [...currentIds, member.id]);
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/work-packages/${selectedWorkPackage.id}/assign-member`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({ accountId: member.id }),
+        }
+      );
+
+      if (!res.ok) {
+        let errorMessage = "Failed to assign member to work package";
+
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          const errorText = await res.text();
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      const updatedWorkPackages = await fetchWorkPackages();
+      const updatedSelection = updatedWorkPackages.find(
+        (workPackage) => workPackage.id === selectedWorkPackage.id
+      );
+
+      if (updatedSelection) {
+        setSelectedWorkPackage(updatedSelection);
+      }
+
+      setAssignmentSuccess(
+        `${member.name} was assigned to ${selectedWorkPackage.name}.`
+      );
+    } catch (err) {
+      setAssignmentError(err.message || "Failed to assign member to work package");
+    } finally {
+      setAssigningMemberIds((currentIds) =>
+        currentIds.filter((currentId) => currentId !== member.id)
+      );
+    }
+  };
+
   const handleExportExcel = () => {
     const rows = [];
 
@@ -325,12 +570,12 @@ export default function ProjectDetail() {
             Export Excel
           </button>
 
-          <button className="action-btn action-overview">
+          <button className="action-btn action-overview" onClick={openInviteMembersModal}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
             </svg>
-            General Overview
+            Invite Members
           </button>
 
           <button className="action-btn action-report">
@@ -482,10 +727,7 @@ export default function ProjectDetail() {
                   {currentRole === "admin" && (
                     <button
                       className="btn-assign-members-workpackage"
-                      onClick={() => {
-                        // TODO: Open modal to assign members to this work package
-                        alert(`Assign members to work package: ${workPackage.name}`);
-                      }}
+                      onClick={() => openAssignMembersModal(workPackage)}
                     >
                       Assign Members
                     </button>
@@ -493,13 +735,215 @@ export default function ProjectDetail() {
                 </div>
 
                 <div className="work-package-members">
-                  <p className="work-package-members-title">No members assigned yet</p>
+                  <p className="work-package-members-title">Assigned Members</p>
+
+                  {(workPackage.assignedMembers || []).length === 0 ? (
+                    <p className="no-members-message">No members assigned yet</p>
+                  ) : (
+                    <div className="work-package-members-grid">
+                      {(workPackage.assignedMembers || []).map((assignedMember) => (
+                        <div
+                          key={`${workPackage.id}-${assignedMember.id}`}
+                          className="work-package-member-chip"
+                        >
+                          <span className="work-package-member-chip-name">
+                            {assignedMember.name}
+                          </span>
+                          <span className="work-package-member-chip-role">
+                            {assignedMember.role}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {selectedWorkPackage && (
+        <div
+          className="summary-overlay"
+          onClick={closeAssignMembersModal}
+        >
+          <div
+            className="summary-modal assignment-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="summary-title">Assign Members</h2>
+            <p className="assignment-modal-subtitle">
+              Choose project members to assign to {selectedWorkPackage.name}.
+            </p>
+
+            {assignmentError && (
+              <div className="assignment-feedback assignment-feedback-error">
+                {assignmentError}
+              </div>
+            )}
+
+            {assignmentSuccess && (
+              <div className="assignment-feedback assignment-feedback-success">
+                {assignmentSuccess}
+              </div>
+            )}
+
+            <div className="assignment-member-list">
+              {members.map((member) => {
+                const isAssigned = isMemberAssignedToWorkPackage(
+                  selectedWorkPackage,
+                  member.id
+                );
+                const isAssigning = assigningMemberIds.includes(member.id);
+
+                return (
+                  <div className="assignment-member-row" key={member.id}>
+                    <div className="assignment-member-info">
+                      <span className="assignment-member-name">{member.name}</span>
+                      <span className="assignment-member-meta">
+                        {member.role} · {member.assignedHours} assigned hours
+                      </span>
+                    </div>
+
+                    <button
+                      className="btn-assign-member"
+                      disabled={isAssigned || isAssigning}
+                      onClick={() => handleAssignMemberToWorkPackage(member)}
+                    >
+                      {isAssigned
+                        ? "Assigned"
+                        : isAssigning
+                          ? "Assigning..."
+                          : "Assign to Work Package"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="summary-actions">
+              <button
+                className="btn-close-summary"
+                onClick={closeAssignMembersModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showInviteModal && (
+        <div className="summary-overlay" onClick={closeInviteMembersModal}>
+          <div
+            className="summary-modal invite-members-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="summary-title">Invite Members</h2>
+            <p className="assignment-modal-subtitle">
+              Invite people from the account database to join {projectName}.
+            </p>
+
+            <input
+              className="invite-members-search"
+              type="text"
+              placeholder="Search by name or email"
+              value={inviteSearch}
+              onChange={(e) => setInviteSearch(e.target.value)}
+            />
+
+            {inviteError && (
+              <div className="assignment-feedback assignment-feedback-error">
+                {inviteError}
+              </div>
+            )}
+
+            {inviteSuccess && (
+              <div className="assignment-feedback assignment-feedback-success">
+                {inviteSuccess}
+              </div>
+            )}
+
+            <div className="invite-members-layout">
+              <div className="invite-members-list">
+                {loadingAvailableAccounts ? (
+                  <p className="no-members-message">Loading accounts...</p>
+                ) : inviteableAccounts.length === 0 ? (
+                  <p className="no-members-message">No inviteable accounts found.</p>
+                ) : (
+                  inviteableAccounts.map((account) => {
+                    const selected = isInviteeSelected(account.id);
+
+                    return (
+                      <button
+                        type="button"
+                        key={account.id}
+                        className={`invite-account-row${selected ? " is-selected" : ""}`}
+                        onClick={() => toggleInvitee(account)}
+                      >
+                        <div className="invite-account-info">
+                          <span className="invite-account-name">{account.name}</span>
+                          <span className="invite-account-email">{account.email}</span>
+                        </div>
+                        <span className="invite-account-action">
+                          {selected ? "Selected" : "Select"}
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="invite-selection-panel">
+                <h3 className="invite-selection-title">Selected Invitees</h3>
+
+                {selectedInvitees.length === 0 ? (
+                  <p className="no-members-message">No accounts selected yet.</p>
+                ) : (
+                  <div className="invite-selection-list">
+                    {selectedInvitees.map((invitee) => (
+                      <div key={invitee.id} className="invite-selection-row">
+                        <div className="invite-account-info">
+                          <span className="invite-account-name">{invitee.name}</span>
+                          <span className="invite-account-email">{invitee.email}</span>
+                        </div>
+
+                        <input
+                          type="number"
+                          min="0"
+                          className="invite-hours-input"
+                          placeholder="Assigned hours"
+                          value={invitee.assignedHours}
+                          onChange={(e) =>
+                            updateInviteeAssignedHours(invitee.id, e.target.value)
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="summary-actions">
+              <button
+                className="action-btn action-overview invite-submit-btn"
+                onClick={handleSendInvitations}
+                disabled={sendingInvitations}
+              >
+                {sendingInvitations ? "Sending..." : "Send Invitations"}
+              </button>
+              <button
+                className="btn-close-summary"
+                onClick={closeInviteMembersModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ...existing code... */}
       {/* Admin-only actions at the bottom */}

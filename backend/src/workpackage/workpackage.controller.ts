@@ -19,9 +19,9 @@ export class WorkPackageController {
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Get all work packages for a project' })
   @ApiParam({ name: 'projectId', type: Number })
-  @ApiResponse({ status: 200, type: [WorkPackage] })
-  async findAllByProject(@Param('projectId') projectId: number) {
-    return this.workPackageService.findAllByProject(projectId);
+  @ApiResponse({ status: 200, description: 'Work packages including assigned members' })
+  async findAllByProject(@Param('projectId') projectId: string) {
+    return this.workPackageService.findAllByProject(Number(projectId));
   }
 
   @Get(':id')
@@ -56,10 +56,10 @@ export class WorkPackageController {
   @ApiBody({ schema: { properties: { accountId: { type: 'number' } } } })
   @ApiResponse({ status: 201, description: 'Member assigned to work package' })
   async assignMember(
-    @Param('id') workPackageId: number,
+    @Param('id') workPackageId: string,
     @Body() body: { accountId: number }
   ) {
-    return this.workPackageService.assignMemberToWorkPackage(workPackageId, body.accountId);
+    return this.workPackageService.assignMemberToWorkPackage(Number(workPackageId), Number(body.accountId));
   }
   }
 

@@ -99,7 +99,7 @@ function CreateProject() {
   const handleCreateProject = async (event) => {
     event?.preventDefault();
 
-    if (!projectName || selectedMembers.length === 0) return;
+    if (!projectName) return;
 
     try {
       const user = getUserFromToken();
@@ -169,23 +169,25 @@ function CreateProject() {
         }
       }
 
-      // 2. Send invitations to selected members
-      const inviteRes = await fetch("http://localhost:3000/invitation/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders()
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          projectId: Number(project.id),
-          invitees: selectedMembers.map((m) => ({
-            id: m.id,
-            assigned_hours: m.assignedHours,
-          })),
-        }),
-      });
-      console.log("invite status:", inviteRes.status, await inviteRes.clone().text());
+      if (selectedMembers.length > 0) {
+        // 2. Send invitations to selected members
+        const inviteRes = await fetch("http://localhost:3000/invitation/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders()
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            projectId: Number(project.id),
+            invitees: selectedMembers.map((m) => ({
+              id: m.id,
+              assigned_hours: m.assignedHours,
+            })),
+          }),
+        });
+        console.log("invite status:", inviteRes.status, await inviteRes.clone().text());
+      }
 
       setProjectName("");
       setSelectedMembers([]);
@@ -233,7 +235,7 @@ function CreateProject() {
 
   const isDisabled =
     !projectName.trim() ||
-    selectedMembers.length === 0 ||
+    
     !isHoursValid ||
     !isBudgetValid ||
     !isSubsidyValid ||
