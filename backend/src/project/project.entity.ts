@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeUpdate, BeforeInsert } from 'typeorm';
 import { ProjectMember } from 'src/projectmember/projectmember.entity';
+import { WorkPackage } from '../workpackage/workpackage.entity';
 
 export enum ProjectStatus {
   ONGOING = 'ongoing',
@@ -39,6 +40,10 @@ export class Project {
   // One project → many project members
   @OneToMany(() => ProjectMember, (member) => member.project)
   members: ProjectMember[];
+
+  // One project → many work packages
+  @OneToMany(() => WorkPackage, (workPackage) => workPackage.project)
+  workPackages: WorkPackage[];
   
   // Automatically updating the project status once the end date has passed
   @BeforeUpdate()

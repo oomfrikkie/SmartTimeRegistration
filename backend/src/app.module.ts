@@ -10,6 +10,7 @@ import { ProjectModule } from './project/project.module';
 import { AccountTokenModule } from './account/token/account-token.module';
 import { InvitationModule } from './invitation/invitation.module';
 import { AuthModule } from './auth/auth.module';
+import { WorkPackageModule } from './workpackage/workpackage.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AuthModule } from './auth/auth.module';
     AccountTokenModule,
     InvitationModule,
     AuthModule,
+    WorkPackageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
