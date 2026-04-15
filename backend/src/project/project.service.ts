@@ -56,8 +56,8 @@ export class ProjectService {
       throw new BadRequestException('End date cannot be before start date');
     }
 
-    if (project.budget || project.subsidy < 0) {
-      throw new BadRequestException('The budged and subsidiy cannot be negative values');
+    if (project.budget < 0 || project.subsidy < 0) {
+      throw new BadRequestException('The budged and subsidy cannot be negative values');
     }
 
     const savedProject = await this.projectRepo.save(project);
@@ -143,6 +143,32 @@ export class ProjectService {
     };
   }
 
+  async getProjectBudget(project_id: number): Promise<number> {
+    const project = await this.projectRepo.findOne({
+      where: { id: project_id },
+      select: ['budget']
+    });
+  
+    if (!project) {
+      throw new NotFoundException(`Project with id ${project_id} not found`);
+    }
+  
+    return project.budget;
+  }
+
+  async getProjectSubsidy(project_id: number): Promise<number> {
+    const project = await this.projectRepo.findOne({
+      where: { id: project_id },
+      select: ['subsidy']
+    });
+  
+    if (!project) {
+      throw new NotFoundException(`Project with id ${project_id} not found`);
+    }
+  
+    return project.subsidy;
+  }
+
   async addUserToProject(dto: AddUserDto) {
     const project = await this.projectRepo.findOne({
       where: { id: dto.project_id },
@@ -192,7 +218,7 @@ export class ProjectService {
         start_date: project.start_date,
         end_date: project.end_date,
         budget: project.budget,
-        subsidy: project.subsidiy,
+        subsidy: project.subsidy,
       },
       account: {
         id: account.id,

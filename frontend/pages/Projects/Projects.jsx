@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { GoHourglass } from "react-icons/go";
+import { RiMoneyEuroBoxLine } from "react-icons/ri";
+import { CiBank } from "react-icons/ci";
 import { getUserFromToken, getAuthHeaders } from "../../src/utils/auth";
 import "./projects.css";
 
@@ -139,11 +141,13 @@ export default function Projects() {
               </div>
 
               <div className="project-detail">
-                <span>{project.budget}</span>
+                <RiMoneyEuroBoxLine className="euro-icon"/>
+                <span>Budget: { project.budget } €</span>
               </div>
 
               <div className="project-detail">
-                <span>{project.subsidy}</span>
+                <CiBank className="bank-icon"/>
+                <span>Subsidy: { project.subsidy } €</span>
               </div>
 
               <button
