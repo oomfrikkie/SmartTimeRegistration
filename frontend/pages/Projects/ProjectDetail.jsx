@@ -17,7 +17,35 @@ export default function ProjectDetail() {
   const [budget, setBudget] = useState(null);
   const [subsidy, setSubsidy] = useState(null);
   const [loadingFinancials, setLoadingFinancials] = useState(true);
-  
+  const [workPackages, setWorkPackages] = useState([]);
+  const [loadingWorkPackages, setLoadingWorkPackages] = useState(true);
+
+  const fetchWorkPackages = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/work-packages/project/${projectId}`,
+        {
+          headers: getAuthHeaders()
+        }
+      );
+      if (!res.ok) {
+        throw new Error("Failed to fetch work packages");
+      }
+      const data = await res.json();
+      setWorkPackages(data || []);
+    } catch (err) {
+      console.error("Error fetching work packages:", err);
+      setWorkPackages([]);
+    } finally {
+      setLoadingWorkPackages(false);
+    }
+  };
+
+  useEffect(() => {
+    if (projectId) {
+      fetchWorkPackages();
+    }
+  }, [projectId]);
 
   // Handler for deleting the project
   const handleDeleteProject = async () => {
@@ -63,46 +91,46 @@ export default function ProjectDetail() {
 
 
 
-useEffect(() => {
-  fetchCurrentUsersRole();
-}, [projectId]);
+  useEffect(() => {
+    fetchCurrentUsersRole();
+  }, [projectId]);
 
-useEffect(() => {
-  
-})
+  useEffect(() => {
 
-const fetchCurrentUsersRole = async () => {
-  try {
-    const user = getUserFromToken();
+  })
 
-    if (!user) {
-      throw new Error("No user found in token");
-    }
+  const fetchCurrentUsersRole = async () => {
+    try {
+      const user = getUserFromToken();
 
-    const accountId = user.id;
-
-    setUserID(accountId);
-
-    const res = await fetch(
-      `http://localhost:3000/projects/${projectId}/my-role?account_id=${accountId}`,
-      {
-        headers: getAuthHeaders()
+      if (!user) {
+        throw new Error("No user found in token");
       }
-    );
 
-    if (!res.ok) {
-      throw new Error("Failed to fetch role");
+      const accountId = user.id;
+
+      setUserID(accountId);
+
+      const res = await fetch(
+        `http://localhost:3000/projects/${projectId}/my-role?account_id=${accountId}`,
+        {
+          headers: getAuthHeaders()
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch role");
+      }
+
+      const data = await res.json();
+
+      setCurrentRole(data.role);
+
+      console.log("ROLE:", data.role);
+    } catch (err) {
+      console.error(err);
     }
-
-    const data = await res.json();
-
-    setCurrentRole(data.role);
-
-    console.log("ROLE:", data.role);
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
 
   const projectName = decodeURIComponent(name);
 
@@ -111,44 +139,44 @@ const fetchCurrentUsersRole = async () => {
   }, [projectId]);
 
   const fetchProjectMembers = async () => {
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const res = await fetch(
-  `http://localhost:3000/projects/members?project_id=${projectId}`,
-  {
-    headers: getAuthHeaders()
-  }
-);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/projects/members?project_id=${projectId}`,
+        {
+          headers: getAuthHeaders()
+        }
+      );
 
-console.log("status:", res.status);
+      console.log("status:", res.status);
 
-if (!res.ok) {
-  const text = await res.text();
-  console.log("response text:", text);
-  throw new Error("Failed to fetch project members");
-}
+      if (!res.ok) {
+        const text = await res.text();
+        console.log("response text:", text);
+        throw new Error("Failed to fetch project members");
+      }
 
-    const data = await res.json();
-    console.log("project members response:", data);
+      const data = await res.json();
+      console.log("project members response:", data);
 
-    const memberList = (data || []).map((member) => ({
-      id: member.account?.id,
-      name: member.account?.name || member.account?.email || "Unknown",
-      role: member.roles || "member",
-      totalHours: 0,
-      assignedHours: member.assigned_hours,
-      events: [],
-    }));
+      const memberList = (data || []).map((member) => ({
+        id: member.account?.id,
+        name: member.account?.name || member.account?.email || "Unknown",
+        role: member.roles || "member",
+        totalHours: 0,
+        assignedHours: member.assigned_hours,
+        events: [],
+      }));
 
-    setMembers(memberList);
-  } catch (err) {
-    console.error("Error fetching project members:", err);
-    setMembers([]);
-  } finally {
-    setLoading(false);
-  }
-};
+      setMembers(memberList);
+    } catch (err) {
+      console.error("Error fetching project members:", err);
+      setMembers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getInitial = (memberName) => {
     return memberName.charAt(0).toUpperCase();
@@ -279,53 +307,53 @@ if (!res.ok) {
       </button>
 
       <h1 className="project-detail-title">{projectName}</h1>
-      <p>Budget: { budget } €</p>
-      <p>Subsidy: { subsidy } €</p>
+      <p>Budget: {budget} €</p>
+      <p>Subsidy: {subsidy} €</p>
       <p className="project-detail-subtitle">
         Project member overview and time tracking
       </p>
 
       {currentRole === "admin" && (
-  <div className="project-actions">
-    <button className="action-btn action-export" onClick={handleExportExcel}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-      </svg>
-      Export Excel
-    </button>
+        <div className="project-actions">
+          <button className="action-btn action-export" onClick={handleExportExcel}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            Export Excel
+          </button>
 
-    <button className="action-btn action-overview">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-      </svg>
-      General Overview
-    </button>
+          <button className="action-btn action-overview">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            General Overview
+          </button>
 
-    <button className="action-btn action-report">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="7 10 12 15 17 10" />
-        <line x1="12" y1="15" x2="12" y2="3" />
-      </svg>
-      In-depth Report
-    </button>
+          <button className="action-btn action-report">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            In-depth Report
+          </button>
 
-    <button
-      className="action-btn action-summary"
-      onClick={() => setShowSummary(true)}
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-      </svg>
-      View Summary
-    </button>
-  </div>
-)}
+          <button
+            className="action-btn action-summary"
+            onClick={() => setShowSummary(true)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            View Summary
+          </button>
+        </div>
+      )}
 
       <h2 className="members-heading">Project Members</h2>
 
@@ -365,7 +393,7 @@ if (!res.ok) {
               </div>
 
               <div className="member-hours">
-                <GoHourglass className="member-hourglass-icon"/>
+                <GoHourglass className="member-hourglass-icon" />
                 <span>{Math.floor(member.assignedHours) - Math.floor(member.totalHours)} hours remaining</span>
               </div>
 
@@ -424,18 +452,67 @@ if (!res.ok) {
           </div>
         </div>
       )}
-    {/* ...existing code... */}
-    {/* Admin-only actions at the bottom */}
-    {currentRole === "admin" && (
-      <div className="project-bottom-actions">
-        <button className="action-complete-btn" onClick={handleCompleteProject}>
-          Complete Project
-        </button>
-        <button className="action-delete-btn" onClick={handleDeleteProject}>
-          Delete Project
-        </button>
+
+      <div className="work-packages-section">
+        <h2 className="members-heading">Work Packages</h2>
+
+        {loadingWorkPackages ? (
+          <div className="members-loading">Loading work packages...</div>
+        ) : workPackages.length === 0 ? (
+          <div className="work-packages-empty">
+            <p>No work packages created yet.</p>
+          </div>
+        ) : (
+          <div className="work-packages-list">
+            {workPackages.map((workPackage, wpIndex) => (
+              <div key={workPackage.id} className="work-package-container">
+                <div className="work-package-header">
+                  <div
+                    className="work-package-icon"
+                    style={{ background: getAvatarColor(wpIndex) }}
+                  >
+                    {workPackage.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="work-package-title">
+                    <h3>{workPackage.name}</h3>
+                    <span className="work-package-total-hours">
+                      {workPackage.total_hours} hours allocated
+                    </span>
+                  </div>
+                  {currentRole === "admin" && (
+                    <button
+                      className="btn-assign-members-workpackage"
+                      onClick={() => {
+                        // TODO: Open modal to assign members to this work package
+                        alert(`Assign members to work package: ${workPackage.name}`);
+                      }}
+                    >
+                      Assign Members
+                    </button>
+                  )}
+                </div>
+
+                <div className="work-package-members">
+                  <p className="work-package-members-title">No members assigned yet</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    )}
+
+      {/* ...existing code... */}
+      {/* Admin-only actions at the bottom */}
+      {currentRole === "admin" && (
+        <div className="project-bottom-actions">
+          <button className="action-complete-btn" onClick={handleCompleteProject}>
+            Complete Project
+          </button>
+          <button className="action-delete-btn" onClick={handleDeleteProject}>
+            Delete Project
+          </button>
+        </div>
+      )}
     </div>
   );
 }
