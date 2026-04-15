@@ -118,15 +118,15 @@ function CreateProject() {
           ...getAuthHeaders()
         },
         credentials: "include",
-       body: JSON.stringify({
-  name: projectName,
-  account_id: user.id,
-  total_hours: parseFloat(totalHours),
-  start_date: startDate,
-  end_date: endDate,
-  budget: parseFloat(budget),
-  subsidy: parseFloat(subsidy),
-}),
+        body: JSON.stringify({
+          name: projectName,
+          account_id: user.id,
+          total_hours: parseFloat(totalHours),
+          start_date: startDate,
+          end_date: endDate,
+          budget: parseFloat(budget),
+          subsidy: parseFloat(subsidy),
+        }),
       });
 
       if (!projectRes.ok) {
