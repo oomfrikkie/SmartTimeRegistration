@@ -93,7 +93,24 @@ CREATE TABLE invitations (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Add John Doe as ADMIN to the first project
--- Assumes the first project and account have id = 1
 INSERT INTO project_member (project_id, account_id, roles, assigned_hours)
 VALUES (1, 1, 'admin', 0);
+
+
+-- Work package table
+CREATE TABLE work_package (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    total_hours DECIMAL(6,2) DEFAULT 0 NOT NULL,
+    project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE
+);
+
+-- Join table for project members and work packages (many-to-many)
+CREATE TABLE project_member_work_package (
+    project_member_project_id INTEGER NOT NULL,
+    project_member_account_id INTEGER NOT NULL,
+    work_package_id INTEGER NOT NULL REFERENCES work_package(id) ON DELETE CASCADE,
+    PRIMARY KEY (project_member_project_id, project_member_account_id, work_package_id),
+    FOREIGN KEY (project_member_project_id, project_member_account_id)
+        REFERENCES project_member(project_id, account_id) ON DELETE CASCADE
+);
