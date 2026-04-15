@@ -255,6 +255,34 @@ export class ProjectService {
     };
   }
 
+  async getProjectMemberEvents(project_id: number, account_id: number) {
+    const project = await this.projectRepo.findOne({
+      where: { id: project_id },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project cannot be found');
+    }
+
+    const account = await this.accountRepo.findOne({
+      where: { id: account_id },
+    });
+
+    if (!account) {
+      throw new NotFoundException('Account cannot be found');
+    }
+
+    try {
+      const filterDto = {
+        account_id,
+        project_name: project.name,
+      };
+      return await this.eventService.getEventByAccountIdTextFiltered(filterDto);
+    } catch {
+      return [];
+    }
+  }
+
   async getProjectMemberHours(account_id: number, project_id: number) {
     const project = await this.projectRepo.findOne({
       where: { id: project_id },

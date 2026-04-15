@@ -60,6 +60,14 @@ export class ProjectController {
     return this.projectService.completeProject(project_id);
   }
 
+  @Get(':project_id/member-events')
+  async getProjectMemberEvents(
+    @Param('project_id', ParseIntPipe) project_id: number,
+    @Query('account_id', ParseIntPipe) account_id: number,
+  ) {
+    return this.projectService.getProjectMemberEvents(project_id, account_id);
+  }
+
   @Get(':project_id/member-hours')
   async getProjectMemberHours(
     @Param('project_id', ParseIntPipe) project_id: number,
