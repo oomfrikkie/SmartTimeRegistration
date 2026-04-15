@@ -119,6 +119,11 @@
     font-size: 1rem;
 }
 
+.euro-icon, .bank-icon {
+    font-size: 1.2rem;
+    stroke-width: 3%;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .projects-grid {

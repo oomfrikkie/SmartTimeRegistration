@@ -56,4 +56,28 @@ export class CreateProjectDto {
   @IsOptional()
   @Type(() => Date)
   end_date?: Date;
+
+  @ApiProperty({
+    example: 1500,
+    description: "Project budget",
+    required: false,
+    default: 0,
+    minimum: 0
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  budget: number;
+
+  @ApiProperty({
+    example: 1500,
+    description: "Project subsidy",
+    required: false,
+    default: 0,
+    minimum: 0
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  subsidy: number;
 }

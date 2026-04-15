@@ -67,4 +67,27 @@ export class ProjectController {
   ) {
     return this.projectService.getProjectMemberHours(account_id, project_id);
   }
+
+  // Endpoint 1: Get project budget
+  @Get(':project_id/budget')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  async getProjectBudget(@Param('project_id', ParseIntPipe) project_id: number) {
+    const budget = await this.projectService.getProjectBudget(project_id);
+    return {
+      project_id,
+      budget
+    };
+  }
+
+  @Get(':project_id/subsidy')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  async getProjectSubsidy(@Param('project_id', ParseIntPipe) project_id: number) {
+    const subsidy = await this.projectService.getProjectSubsidy(project_id);
+    return {
+      project_id,
+      subsidy
+    };
+  }
 }

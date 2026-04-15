@@ -15,6 +15,11 @@ function CreateProject() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [totalHours, setTotalHours] = useState("");
+  const [budget, setBudget] = useState("");
+  const [subsidy, setSubsidy] = useState("");
+  const [workPackageName, setWorkPackageName] = useState("");
+  const [workPackageHours, setWorkPackageHours] = useState("");
+  const [workPackages, setWorkPackages] = useState([]);
 
   useEffect(() => {
     fetchUsers();
@@ -65,15 +70,45 @@ function CreateProject() {
     );
   };
 
-  // Create project
-  const handleCreateProject = async () => {
-    if (!projectName || selectedMembers.length === 0) return;
+  const addWorkPackage = () => {
+    const trimmedName = workPackageName.trim();
+    const parsedHours = parseFloat(workPackageHours);
 
-    setCreating(true);
+    if (!trimmedName || !Number.isFinite(parsedHours) || parsedHours <= 0) {
+      return;
+    }
+
+    setWorkPackages((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${prev.length}`,
+        name: trimmedName,
+        total_hours: parsedHours,
+      },
+    ]);
+
+    setWorkPackageName("");
+    setWorkPackageHours("");
+  };
+
+  const removeWorkPackage = (id) => {
+    setWorkPackages((prev) => prev.filter((workPackage) => workPackage.id !== id));
+  };
+
+  // Create project
+  const handleCreateProject = async (event) => {
+    event?.preventDefault();
+
+    if (!projectName || selectedMembers.length === 0) return;
 
     try {
       const user = getUserFromToken();
-      if (!user) return;
+      if (!user) {
+        console.error("No authenticated user found in token");
+        return;
+      }
+
+      setCreating(true);
 
       // 1. Create the project
       const projectRes = await fetch("http://localhost:3000/projects", {
@@ -83,21 +118,56 @@ function CreateProject() {
           ...getAuthHeaders()
         },
         credentials: "include",
-        body: JSON.stringify({
-          name: projectName,
-          account_id: user.id,
-          total_hours: parseFloat(totalHours),
-          start_date: startDate,
-          end_date: endDate,
-        }),
+       body: JSON.stringify({
+  name: projectName,
+  account_id: user.id,
+  total_hours: parseFloat(totalHours),
+  start_date: startDate,
+  end_date: endDate,
+  budget: parseFloat(budget),
+  subsidy: parseFloat(subsidy),
+}),
       });
 
       if (!projectRes.ok) {
-        console.error("Failed to create project");
+        console.error("Failed to create project", projectRes.status, await projectRes.clone().text());
         return;
       }
 
       const { project } = await projectRes.json();
+
+      if (workPackages.length > 0) {
+        const workPackageResponses = await Promise.all(
+          workPackages.map((workPackage) =>
+            fetch("http://localhost:3000/work-packages", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...getAuthHeaders(),
+              },
+              credentials: "include",
+              body: JSON.stringify({
+                name: workPackage.name,
+                total_hours: workPackage.total_hours,
+                projectId: Number(project.id),
+              }),
+            })
+          )
+        );
+
+        const failedWorkPackageResponse = workPackageResponses.find(
+          (response) => !response.ok
+        );
+
+        if (failedWorkPackageResponse) {
+          console.error(
+            "Failed to create work package",
+            failedWorkPackageResponse.status,
+            await failedWorkPackageResponse.clone().text()
+          );
+          return;
+        }
+      }
 
       // 2. Send invitations to selected members
       const inviteRes = await fetch("http://localhost:3000/invitation/send", {
@@ -120,6 +190,14 @@ function CreateProject() {
       setProjectName("");
       setSelectedMembers([]);
       setSearch("");
+      setStartDate("");
+      setEndDate("");
+      setTotalHours("");
+      setBudget("");
+      setSubsidy("");
+      setWorkPackageName("");
+      setWorkPackageHours("");
+      setWorkPackages([]);
 
       navigate("/projects");
     } catch (err) {
@@ -134,8 +212,21 @@ function CreateProject() {
     0
   );
 
+  const parsedTotalHours = parseFloat(totalHours);
+  const parsedBudget = parseFloat(budget);
+  const parsedSubsidy = parseFloat(subsidy);
+  const hasAssignedHours = selectedMembers.every(
+    (member) => Number(member.assignedHours) > 0
+  );
+
   const isHoursValid =
-    totalHours > 0;
+    Number.isFinite(parsedTotalHours) && parsedTotalHours > 0;
+
+  const isBudgetValid =
+    Number.isFinite(parsedBudget) && parsedBudget >= 0;
+
+  const isSubsidyValid =
+    Number.isFinite(parsedSubsidy) && parsedSubsidy >= 0;
 
   const isDateValid =
     startDate && endDate && new Date(endDate) >= new Date(startDate);
@@ -144,19 +235,26 @@ function CreateProject() {
     !projectName.trim() ||
     selectedMembers.length === 0 ||
     !isHoursValid ||
+    !isBudgetValid ||
+    !isSubsidyValid ||
     !isDateValid ||
     !startDate ||
-    !endDate ||
-    !totalAssigned;
+    !endDate;
 
   console.log("isDisabled debug", {
     projectName: projectName.trim(),
     memberCount: selectedMembers.length,
     totalAssigned,
-    parsedTotalHours: parseFloat(totalHours),
-    diff: Math.abs(totalAssigned - parseFloat(totalHours)),
+    parsedTotalHours,
+    parsedBudget,
+    parsedSubsidy,
+    diff: Math.abs(totalAssigned - parsedTotalHours),
     isHoursValid,
+    isBudgetValid,
+    isSubsidyValid,
     isDateValid,
+    hasAssignedHours,
+    workPackageCount: workPackages.length,
     startDate,
     endDate,
   });
@@ -206,16 +304,20 @@ function CreateProject() {
           onChange={(e) => setTotalHours(e.target.value)}
         />
 
-        <label>Project Budget</label>
+        <label>Project Budget €</label>
         <input
           type="number"
-          placeholder="Enter the budget amount of the project"
+          placeholder="Enter the € budget amount of the project"
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
         />
 
-        <label>Project Subsidy</label>
+        <label>Project Subsidy €</label>
         <input
           type="number"
-          placeholder="Enter the subsidy amount of the project"
+          placeholder="Enter the € subsidy amount of the project"
+          value={subsidy}
+          onChange={(e) => setSubsidy(e.target.value)}
         />
 
         <label>Create Work Packages</label>
@@ -223,17 +325,41 @@ function CreateProject() {
           <input
             type="text"
             placeholder="Enter the name of this work package"
-            classname="work-package-name"
+            className="work-package-name"
+            value={workPackageName}
+            onChange={(e) => setWorkPackageName(e.target.value)}
           />
           <input
             type="number"
             placeholder="Work package hours"
             className="work-package-hours"
+            value={workPackageHours}
+            onChange={(e) => setWorkPackageHours(e.target.value)}
           />
-          <button className="submit-work-package">
+          <button type="button" className="submit-work-package" onClick={addWorkPackage}>
             Create
           </button>
         </div>
+
+        {workPackages.length > 0 && (
+          <div className="work-package-list">
+            {workPackages.map((workPackage) => (
+              <div key={workPackage.id} className="work-package-item">
+                <div>
+                  <p>{workPackage.name}</p>
+                  <span>{workPackage.total_hours} hours</span>
+                </div>
+                <button
+                  type="button"
+                  className="btn-delete"
+                  onClick={() => removeWorkPackage(workPackage.id)}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Section */}
@@ -258,7 +384,7 @@ function CreateProject() {
                   <span>{user.email}</span>
                 </div>
 
-                <button onClick={() => addMember(user)}>
+                <button type="button" onClick={() => addMember(user)}>
                   Add
                 </button>
               </div>
@@ -287,7 +413,7 @@ function CreateProject() {
                   />
                 </div>
 
-                <button className="btn-delete" onClick={() => removeMember(member.id)}>
+                <button type="button" className="btn-delete" onClick={() => removeMember(member.id)}>
                   ✕
                 </button>
 
@@ -296,6 +422,7 @@ function CreateProject() {
           )}
 
           <button
+            type="button"
             className={`create-btn ${isDisabled ? "disabled" : ""}`}
             onClick={handleCreateProject}
             disabled={isDisabled || creating}

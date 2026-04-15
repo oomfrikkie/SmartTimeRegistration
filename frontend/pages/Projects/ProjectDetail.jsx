@@ -14,6 +14,9 @@ export default function ProjectDetail() {
   const [showSummary, setShowSummary] = useState(false);
   const [currentRole, setCurrentRole] = useState("");
   const [userID, setUserID] = useState(null);
+  const [budget, setBudget] = useState(null);
+  const [subsidy, setSubsidy] = useState(null);
+  const [loadingFinancials, setLoadingFinancials] = useState(true);
   
 
   // Handler for deleting the project
@@ -100,6 +103,7 @@ const fetchCurrentUsersRole = async () => {
     console.error(err);
   }
 };
+
   const projectName = decodeURIComponent(name);
 
   useEffect(() => {
@@ -209,6 +213,53 @@ if (!res.ok) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [members.length, projectId]);
 
+  useEffect(() => {
+    if (projectId) {
+      fetchProjectBudget();
+      fetchProjectSubsidy();
+    }
+  }, [projectId]);
+
+  const fetchProjectBudget = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/projects/${projectId}/budget`,
+        {
+          headers: getAuthHeaders()
+        }
+      );
+      if (!res.ok) {
+        throw new Error("Failed to fetch budget");
+      }
+      const data = await res.json();
+      setBudget(data.budget);
+    } catch (err) {
+      console.error("Error fetching budget:", err);
+      setBudget(null);
+    } finally {
+      setLoadingFinancials(false);
+    }
+  };
+
+  const fetchProjectSubsidy = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/projects/${projectId}/subsidy`,
+        {
+          headers: getAuthHeaders()
+        }
+      );
+      if (!res.ok) {
+        throw new Error("Failed to fetch subsidy");
+      }
+      const data = await res.json();
+      setSubsidy(data.subsidy);
+    } catch (err) {
+      console.error("Error fetching subsidy:", err);
+      setSubsidy(null);
+    }
+  };
+
   return (
     <div className="project-detail-container">
       <button className="btn-back" onClick={() => navigate("/projects")}>
@@ -228,6 +279,8 @@ if (!res.ok) {
       </button>
 
       <h1 className="project-detail-title">{projectName}</h1>
+      <p>Budget: { budget } €</p>
+      <p>Subsidy: { subsidy } €</p>
       <p className="project-detail-subtitle">
         Project member overview and time tracking
       </p>
