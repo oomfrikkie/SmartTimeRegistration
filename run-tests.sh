@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o pipefail
 
 # Colors
 GREEN='\033[0;32m'
@@ -9,70 +10,127 @@ NC='\033[0m'
 
 ALL_PASSED=true
 
-run_test() {
-  TEST_NAME=$1
-  TEST_FILE=$2
+cd backend || { echo -e "${RED}Backend folder not found!${NC}"; exit 1; }
 
-  echo -e "${CYAN}Running $TEST_NAME...${NC}"
-
-  OUTPUT=$(npm run test:e2e -- "$TEST_FILE" --silent 2>&1)
-  STATUS=$?
-
-  if [ $STATUS -eq 0 ]; then
-    echo -e "${GREEN}✔ All tests passed in $TEST_NAME${NC}"
-
-    PASSED_TESTS=$(echo "$OUTPUT" | grep -E "✓")
-    if [ -n "$PASSED_TESTS" ]; then
-      echo "$PASSED_TESTS" | sed 's/^/  - /'
+ensure_backend_dependencies() {
+  if [ ! -d node_modules ] || [ ! -f node_modules/jest/bin/jest.js ] || [ ! -d node_modules/ts-jest ]; then
+    echo -e "${YELLOW}Backend dependencies are missing. Installing with npm install...${NC}"
+    npm install --no-audit --no-fund
+    INSTALL_CODE=$?
+    if [ $INSTALL_CODE -ne 0 ]; then
+      echo -e "${RED}Dependency installation failed (exit code $INSTALL_CODE).${NC}"
+      cd ..
+      exit 1
     fi
-
-    echo ""
-  else
-    ALL_PASSED=false
-    echo -e "${RED}✖ Some tests failed in $TEST_NAME${NC}"
-
-    FAILED_TESTS=$(echo "$OUTPUT" | grep -E "● ")
-    if [ -n "$FAILED_TESTS" ]; then
-      echo -e "${YELLOW}Failed tests:${NC}"
-      echo "$FAILED_TESTS" | sed 's/^/  - /'
-    fi
-
-    PASSED_TESTS=$(echo "$OUTPUT" | grep -E "✓")
-    if [ -n "$PASSED_TESTS" ]; then
-      echo -e "${GREEN}Passed tests:${NC}"
-      echo "$PASSED_TESTS" | sed 's/^/  - /'
-    fi
-
-    echo ""
   fi
 }
 
-cd backend || { echo -e "${RED}Backend folder not found!${NC}"; exit 1; }
+ensure_backend_dependencies
 
-clear
+JEST_BIN="./node_modules/jest/bin/jest.js"
+
+if [ ! -f "$JEST_BIN" ]; then
+  echo -e "${RED}Local Jest binary not found after install attempt.${NC}"
+  cd ..
+  exit 1
+fi
+
+if [ ! -d test ]; then
+  echo -e "${RED}No test folder found in backend/${NC}"
+  cd ..
+  exit 1
+fi
+
+TEST_FILES=$(find test -name "*.e2e-spec.ts" | sort)
+
+if [ -z "$TEST_FILES" ]; then
+  echo -e "${RED}No e2e test files found.${NC}"
+  cd ..
+  exit 1
+fi
+
+echo ""
+echo -e "${CYAN}Running all e2e files...${NC}"
 echo ""
 
-run_test "Auth Test" "test/auth.e2e-spec.ts"
-sleep 1
+run_test_file() {
+  TEST_FILE="$1"
+  RESULT_JSON=".jest-result-$(echo "$TEST_FILE" | tr '/\\' '-').json"
+  RESULT_LOG=".jest-log-$(echo "$TEST_FILE" | tr '/\\' '-').log"
 
-run_test "Microsoft Auth Test" "test/microsoftAuth.e2e-spec.ts"
-sleep 1
+  echo -e "${CYAN}File: $TEST_FILE${NC}"
 
-run_test "Project/Invite Test" "test/project-invite.e2e-spec.ts"
-sleep 1
+  rm -f "$RESULT_JSON" "$RESULT_LOG"
 
-run_test "Password Reset Test" "test/passwordReset.e2e-spec.ts"
+  # Use local project Jest directly so we always run with local ts-jest and config.
+  node "$JEST_BIN" --config ./jest-e2e.json "$TEST_FILE" --runInBand --forceExit --json --outputFile="$RESULT_JSON" --silent 2>&1 | tee "$RESULT_LOG"
+  FILE_EXIT_CODE=${PIPESTATUS[0]}
 
-echo ""
+  if [ ! -f "$RESULT_JSON" ]; then
+    ALL_PASSED=false
+    echo -e "${RED}  Could not read Jest JSON output for $TEST_FILE${NC}"
+    if [ -f "$RESULT_LOG" ]; then
+      echo -e "${YELLOW}  Last runner output:${NC}"
+      sed -n '1,25p' "$RESULT_LOG" | sed 's/^/    /'
+    fi
+    echo -e "${YELLOW}  File exit status code: ${FILE_EXIT_CODE}${NC}"
+    echo ""
+    rm -f "$RESULT_LOG"
+    return
+  fi
+
+  # Print each individual test result from the file.
+  node - "$RESULT_JSON" <<'NODE'
+const fs = require('fs');
+const file = process.argv[2];
+const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+const suites = data.testResults || [];
+
+for (const suite of suites) {
+  const assertions = suite.assertionResults || [];
+  for (const test of assertions) {
+    const rawStatus = String(test.status || 'unknown').toLowerCase();
+    const status = rawStatus.toUpperCase();
+    const statusCodeMap = {
+      passed: 0,
+      failed: 1,
+      pending: 2,
+      todo: 3,
+      unknown: 9,
+    };
+    const statusCode = statusCodeMap[rawStatus] ?? 9;
+    const title = test.fullName || test.title || '(unnamed test)';
+    console.log(`  [${status}] [code=${statusCode}] ${title}`);
+  }
+}
+NODE
+
+  if [ $FILE_EXIT_CODE -eq 0 ]; then
+    echo -e "${GREEN}  File result: PASS${NC}"
+  else
+    ALL_PASSED=false
+    echo -e "${RED}  File result: FAIL${NC}"
+  fi
+
+  echo -e "${YELLOW}  File exit status code: ${FILE_EXIT_CODE}${NC}"
+  echo ""
+
+  rm -f "$RESULT_JSON"
+  rm -f "$RESULT_LOG"
+}
+
+for TEST_FILE in $TEST_FILES; do
+  run_test_file "$TEST_FILE"
+done
+
 echo -e "${YELLOW}-----------------------------------${NC}"
 
 if [ "$ALL_PASSED" = true ]; then
-  echo -e "${GREEN}🎉 ALL TESTS PASSED!${NC}"
-  echo -e "${GREEN}Everything is working perfectly.${NC}"
+  echo -e "${GREEN}ALL E2E TESTS PASSED${NC}"
+  cd ..
+  exit 0
 else
-  echo -e "${RED}❌ Some tests failed. Check the failed test list above.${NC}"
+  echo -e "${RED}Some e2e tests failed${NC}"
+  cd ..
+  exit 1
 fi
-
-echo -e "${YELLOW}-----------------------------------${NC}"
-
-cd ..
