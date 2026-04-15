@@ -437,25 +437,62 @@ export default function ProjectDetail() {
     }
   };
 
-  const handleExportExcel = () => {
-    const rows = [];
+  const handleExportExcel = async () => {
+    const rowsByPackage = {};
 
-    members.forEach((member) => {
-      (member.events || []).forEach((event) => {
-        rows.push({
-          Member: member.name,
-          Date: event.date,
-          Hours: event.total_hours || event.totalHours || 0,
-          Description: event.description || event.name || "",
+    const getPackageNumber = (pkg) => {
+      if (!pkg) return 9999;
+      const match = pkg.match(/\d+/);
+      return match ? parseInt(match[0], 10) : 9999;
+    };
+
+    const normalizePackageKey = (pkg) => {
+      if (!pkg) return "no-package";
+      const match = pkg.match(/\d+/);
+      return match ? `WP${match[0]}` : pkg.trim();
+    };
+
+    for (const member of members) {
+      try {
+        const res = await fetch(
+          `http://localhost:3000/projects/${projectId}/member-events?account_id=${member.id}`,
+          { headers: getAuthHeaders() }
+        );
+        if (!res.ok) continue;
+        const events = await res.json();
+        events.forEach((event) => {
+          const key = normalizePackageKey(event.package_name);
+          if (!rowsByPackage[key]) {
+            rowsByPackage[key] = [];
+          }
+          rowsByPackage[key].push({
+            Member: member.name,
+            Date: event.date,
+            "Event Name": event.name,
+            "Start Time": event.start_time,
+            "End Time": event.end_time,
+            Hours: Number(event.total_hours) || 0,
+            Description: event.description || "",
+          });
         });
-      });
-    });
+      } catch (err) {
+        console.error(`Error fetching events for member ${member.name}:`, err);
+      }
+    }
 
-    if (rows.length === 0) return;
+    if (Object.keys(rowsByPackage).length === 0) {
+      alert("No time entries found for this project.");
+      return;
+    }
 
-    const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, projectName);
+    Object.entries(rowsByPackage)
+      .sort(([a], [b]) => getPackageNumber(a) - getPackageNumber(b))
+      .forEach(([sheetName, rows]) => {
+        const ws = XLSX.utils.json_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName.substring(0, 31));
+      });
+
     const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     saveAs(new Blob([buf]), `${projectName}.xlsx`);
   };
