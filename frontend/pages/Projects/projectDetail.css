@@ -41,20 +41,20 @@
 /* Action buttons */
 .project-actions {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-bottom: 2.5rem;
+    align-items: center;
 }
 
 .action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
+    padding: 0.7rem 1.4rem;
     border: none;
-    border-radius: 0.4rem;
+    border-radius: 0.5rem;
     color: #fff;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: opacity 0.2s ease;
@@ -173,7 +173,7 @@
 .summary-modal {
     background: #fff;
     border-radius: 1rem;
-    padding: 2.5rem;
+    padding: 2.5rem 2.5rem 2rem 2.5rem;
     width: 100%;
     max-width: 550px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
@@ -611,6 +611,36 @@
     color: #999;
     font-style: italic;
     border: 1px dashed #ddd;
+}
+
+/* Add Work Package Modal and Form */
+.create-work-package {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-bottom: 1.2rem;
+}
+
+.create-work-package input {
+    padding: 0.8rem 1.1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.submit-work-package {
+    background: linear-gradient(135deg, #3b82f6, #9333ea);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.8rem 1.3rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.2rem;
+    align-self: flex-end;
 }
 
 /* Responsive */

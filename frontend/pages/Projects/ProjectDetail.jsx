@@ -18,6 +18,51 @@ export default function ProjectDetail() {
   const [subsidy, setSubsidy] = useState(null);
   const [loadingFinancials, setLoadingFinancials] = useState(true);
   const [workPackages, setWorkPackages] = useState([]);
+  // Add Work Package modal state
+  const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
+  const [newWorkPackageName, setNewWorkPackageName] = useState("");
+  const [newWorkPackageHours, setNewWorkPackageHours] = useState("");
+  const [addingWorkPackage, setAddingWorkPackage] = useState(false);
+  const [addWorkPackageError, setAddWorkPackageError] = useState("");
+
+  // Add Work Package handler
+  const handleAddWorkPackage = async () => {
+    const trimmedName = newWorkPackageName.trim();
+    const parsedHours = parseFloat(newWorkPackageHours);
+    setAddWorkPackageError("");
+    if (!trimmedName || !Number.isFinite(parsedHours) || parsedHours <= 0) {
+      setAddWorkPackageError("Please enter a valid name and hours.");
+      return;
+    }
+    setAddingWorkPackage(true);
+    try {
+      const res = await fetch("http://localhost:3000/work-packages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: trimmedName,
+          total_hours: parsedHours,
+          projectId: Number(projectId),
+        }),
+      });
+      if (!res.ok) {
+        setAddWorkPackageError("Failed to add work package.");
+        return;
+      }
+      setNewWorkPackageName("");
+      setNewWorkPackageHours("");
+      setShowAddWorkPackageModal(false);
+      fetchWorkPackages();
+    } catch (err) {
+      setAddWorkPackageError("Error adding work package.");
+    } finally {
+      setAddingWorkPackage(false);
+    }
+  };
   const [loadingWorkPackages, setLoadingWorkPackages] = useState(true);
   const [selectedWorkPackage, setSelectedWorkPackage] = useState(null);
   const [assigningMemberIds, setAssigningMemberIds] = useState([]);
@@ -572,6 +617,50 @@ export default function ProjectDetail() {
 
   return (
     <div className="project-detail-container">
+      {/* Add Work Package Modal */}
+      {showAddWorkPackageModal && (
+        <div className="summary-overlay" onClick={() => setShowAddWorkPackageModal(false)}>
+          <div className="summary-modal" onClick={e => e.stopPropagation()}>
+            <h2 className="summary-title">Add Work Package</h2>
+            <div className="create-work-package">
+              <input
+                type="text"
+                placeholder="Work package name"
+                className="work-package-name"
+                value={newWorkPackageName}
+                onChange={e => setNewWorkPackageName(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Work package hours"
+                className="work-package-hours"
+                value={newWorkPackageHours}
+                onChange={e => setNewWorkPackageHours(e.target.value)}
+              />
+            </div>
+            {addWorkPackageError && (
+              <div className="assignment-feedback assignment-feedback-error">
+                {addWorkPackageError}
+              </div>
+            )}
+            <div className="summary-actions">
+              <button
+                className="action-btn action-overview"
+                onClick={handleAddWorkPackage}
+                disabled={addingWorkPackage}
+              >
+                {addingWorkPackage ? "Adding..." : "Add Work Package"}
+              </button>
+              <button
+                className="btn-close-summary"
+                onClick={() => setShowAddWorkPackageModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <button className="btn-back" onClick={() => navigate("/projects")}>
         <svg
           width="16"
@@ -606,7 +695,12 @@ export default function ProjectDetail() {
             </svg>
             Export Excel
           </button>
-
+          <button className="action-btn action-overview" onClick={() => setShowAddWorkPackageModal(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add Work Package
+          </button>
           <button className="action-btn action-overview" onClick={openInviteMembersModal}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -614,7 +708,6 @@ export default function ProjectDetail() {
             </svg>
             Invite Members
           </button>
-          
           <button
             className="action-btn action-summary"
             onClick={() => setShowSummary(true)}

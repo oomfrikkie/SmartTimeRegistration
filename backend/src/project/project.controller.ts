@@ -1,3 +1,4 @@
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Controller, Patch, Post, Body, Get, Query, Param, Delete, ParseIntPipe, UseGuards, Req } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
@@ -60,6 +61,14 @@ export class ProjectController {
     return this.projectService.completeProject(project_id);
   }
 
+  /**
+   * Get all events for a specific project member.
+   * Returns all event records for the given project and account.
+   */
+  @ApiOperation({ summary: 'Get all events for a project member', description: 'Returns all event records for the given project and account.' })
+  @ApiParam({ name: 'project_id', type: Number, description: 'Project ID' })
+  @ApiQuery({ name: 'account_id', type: Number, description: 'Account ID of the member' })
+  @ApiResponse({ status: 200, description: 'List of events for the member' })
   @Get(':project_id/member-events')
   async getProjectMemberEvents(
     @Param('project_id', ParseIntPipe) project_id: number,
